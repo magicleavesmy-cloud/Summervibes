@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import "./App.css";
 import { products } from "./products";
 
-const whatsappNumber = "60123456789";
+const whatsappNumber = "601165302622";
 
 export default function App() {
   const [cart, setCart] = useState([]);
