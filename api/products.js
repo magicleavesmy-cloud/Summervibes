@@ -3,8 +3,10 @@
 const inventoryKey = "summer-vibes-products";
 
 function getKvConfig() {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+  const url =
+    process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
     return null;
@@ -40,7 +42,8 @@ export default async function handler(request, response) {
   try {
     if (!getKvConfig()) {
       return response.status(501).json({
-        error: "KV_REST_API_URL and KV_REST_API_TOKEN are not configured.",
+        error:
+          "KV_REST_API_URL/KV_REST_API_TOKEN or UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN are not configured.",
       });
     }
 
