@@ -10,6 +10,7 @@ const adminPasscode = "2622";
 const adminSessionKey = "summer-vibes-admin";
 const defaultProductImage =
   "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=80";
+const productsApiPath = "/api/products";
 
 function normalizeFlavours(flavours, defaultStock = 0) {
   if (!Array.isArray(flavours)) {
@@ -66,11 +67,81 @@ function getFirstInStockFlavour(product, fallbackFlavour) {
   );
 }
 
-function getInitialProducts() {
-  const fallbackProducts = products.map((product) => ({
+function getFallbackProducts() {
+  return products.map((product) => ({
     ...product,
     flavours: normalizeFlavours(product.flavours, product.stock),
   }));
+}
+
+function serializeProducts(productList) {
+  return productList.map(({
+    id,
+    name,
+    category,
+    price,
+    rating,
+    tag,
+    image,
+    flavours,
+  }) => ({
+    id,
+    name,
+    category,
+    price,
+    rating,
+    tag,
+    image,
+    flavours,
+  }));
+}
+
+function mergeSavedProducts(savedProducts, fallbackProducts) {
+  if (!Array.isArray(savedProducts)) {
+    return fallbackProducts;
+  }
+
+  const mergedProducts = fallbackProducts.map((product) => {
+    const savedProduct = savedProducts.find((item) => item.id === product.id);
+
+    return savedProduct
+      ? {
+          ...product,
+          name: savedProduct.name || product.name,
+          category: savedProduct.category || product.category,
+          price: savedProduct.price || product.price,
+          rating: savedProduct.rating || product.rating,
+          tag: savedProduct.tag || product.tag,
+          image: savedProduct.image || product.image,
+          flavours: normalizeFlavours(
+            savedProduct.flavours,
+            savedProduct.stock ?? product.stock,
+          ),
+        }
+      : product;
+  });
+
+  const addedProducts = savedProducts
+    .filter(
+      (savedProduct) =>
+        !fallbackProducts.some((product) => product.id === savedProduct.id),
+    )
+    .map((savedProduct) => ({
+      id: savedProduct.id,
+      name: savedProduct.name || "New product",
+      category: savedProduct.category || "Disposable Vape",
+      price: savedProduct.price || "RM0",
+      rating: savedProduct.rating || "4.5",
+      tag: savedProduct.tag || "New",
+      image: savedProduct.image || defaultProductImage,
+      flavours: normalizeFlavours(savedProduct.flavours),
+    }));
+
+  return [...mergedProducts, ...addedProducts];
+}
+
+function getInitialProducts() {
+  const fallbackProducts = getFallbackProducts();
 
   try {
     const savedProductsVersion = window.localStorage.getItem(
@@ -86,47 +157,7 @@ function getInitialProducts() {
       window.localStorage.getItem(productsStorageKey),
     );
 
-    if (!Array.isArray(savedProducts)) {
-      return fallbackProducts;
-    }
-
-    const mergedProducts = fallbackProducts.map((product) => {
-      const savedProduct = savedProducts.find((item) => item.id === product.id);
-
-      return savedProduct
-        ? {
-            ...product,
-            name: savedProduct.name || product.name,
-            category: savedProduct.category || product.category,
-            price: savedProduct.price || product.price,
-            rating: savedProduct.rating || product.rating,
-            tag: savedProduct.tag || product.tag,
-            image: savedProduct.image || product.image,
-            flavours: normalizeFlavours(
-              savedProduct.flavours,
-              savedProduct.stock ?? product.stock,
-            ),
-          }
-        : product;
-    });
-
-    const addedProducts = savedProducts
-      .filter(
-        (savedProduct) =>
-          !fallbackProducts.some((product) => product.id === savedProduct.id),
-      )
-      .map((savedProduct) => ({
-        id: savedProduct.id,
-        name: savedProduct.name || "New product",
-        category: savedProduct.category || "Disposable Vape",
-        price: savedProduct.price || "RM0",
-        rating: savedProduct.rating || "4.5",
-        tag: savedProduct.tag || "New",
-        image: savedProduct.image || defaultProductImage,
-        flavours: normalizeFlavours(savedProduct.flavours),
-      }));
-
-    return [...mergedProducts, ...addedProducts];
+    return mergeSavedProducts(savedProducts, fallbackProducts);
   } catch {
     return fallbackProducts;
   }
@@ -176,6 +207,7 @@ export default function App() {
   );
   const [expandedProductId, setExpandedProductId] = useState(null);
   const [storeProducts, setStoreProducts] = useState(getInitialProducts);
+  const [isRemoteSyncReady, setIsRemoteSyncReady] = useState(false);
   const [cart, setCart] = useState([]);
   const [selectedFlavours, setSelectedFlavours] = useState(() =>
     Object.fromEntries(
@@ -184,31 +216,69 @@ export default function App() {
   );
 
   useEffect(() => {
+    let isMounted = true;
+
+    async function loadRemoteProducts() {
+      try {
+        const response = await fetch(productsApiPath);
+
+        if (response.status === 501) {
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("Unable to load shared products");
+        }
+
+        const data = await response.json();
+
+        if (Array.isArray(data.products) && isMounted) {
+          setStoreProducts(
+            mergeSavedProducts(data.products, getFallbackProducts()),
+          );
+        }
+
+        if (isMounted) {
+          setIsRemoteSyncReady(true);
+        }
+      } catch {
+        if (isMounted) {
+          setIsRemoteSyncReady(false);
+        }
+      }
+    }
+
+    loadRemoteProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const serializedProducts = serializeProducts(storeProducts);
+
     window.localStorage.setItem(
       productsStorageKey,
-      JSON.stringify(
-        storeProducts.map(({
-          id,
-          name,
-          category,
-          price,
-          rating,
-          tag,
-          image,
-          flavours,
-        }) => ({
-          id,
-          name,
-          category,
-          price,
-          rating,
-          tag,
-          image,
-          flavours,
-        })),
-      ),
+      JSON.stringify(serializedProducts),
     );
-  }, [storeProducts]);
+
+    if (!isRemoteSyncReady) {
+      return;
+    }
+
+    const saveTimeout = window.setTimeout(() => {
+      fetch(productsApiPath, {
+        body: JSON.stringify({ products: serializedProducts }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      }).catch(() => {
+        setIsRemoteSyncReady(false);
+      });
+    }, 500);
+
+    return () => window.clearTimeout(saveTimeout);
+  }, [isRemoteSyncReady, storeProducts]);
 
   const productById = useMemo(
     () => new Map(storeProducts.map((product) => [product.id, product])),
