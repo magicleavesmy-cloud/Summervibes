@@ -65,8 +65,8 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(8, 9, 13, 0.42), rgba(8, 9, 13, 0.52)),
-    url("https://static.vecteezy.com/system/resources/thumbnails/049/372/640/small_2x/tropical-fruits-mango-papaya-pineapple-coconut-with-sandy-beach-sea-and-tropical-palm-in-the-background-photo.jpg") center/cover no-repeat;
+    linear-gradient(180deg, rgba(8, 9, 13, 0.18), rgba(8, 9, 13, 0.38)),
+    url("/page-background.jpg") center/cover no-repeat;
 }
 
 @keyframes vape-clouds {
