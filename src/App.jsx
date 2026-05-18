@@ -452,6 +452,16 @@ export default function App() {
           >
             Shop
           </button>
+          <button
+            className={isAdminRoute ? "active" : ""}
+            onClick={() => {
+              window.history.pushState({}, "", "/admin");
+              window.location.reload();
+            }}
+            type="button"
+          >
+            Admin
+          </button>
         </div>
       </nav>
 
