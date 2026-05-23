@@ -9,6 +9,8 @@ const productsVersion = "2026-05-18-spacebar-flavours";
 const adminPasscode = "2622";
 const adminSessionKey = "summer-vibes-admin";
 const themeStorageKey = "summer-vibes-theme";
+const discountThreshold = 300;
+const discountRate = 0.1;
 const defaultProductImage =
   "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=80";
 const productsApiPath = "/api/products";
@@ -335,6 +337,9 @@ export default function App() {
       }, 0),
     [cart, productById],
   );
+  const cartDiscount =
+    cartTotal > discountThreshold ? cartTotal * discountRate : 0;
+  const cartFinalTotal = Math.max(cartTotal - cartDiscount, 0);
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const adminSearchTerm = adminSearch.trim().toLowerCase();
@@ -647,11 +652,17 @@ export default function App() {
       "",
       ...orderLines,
       "",
-      `Total: RM${cartTotal.toFixed(2)}`,
+      `Subtotal: RM${cartTotal.toFixed(2)}`,
+      cartDiscount > 0
+        ? `Discount above RM${discountThreshold}: -RM${cartDiscount.toFixed(2)}`
+        : null,
+      `Total: RM${cartFinalTotal.toFixed(2)}`,
       "",
       "Name:",
       "Delivery / pickup:",
-    ].join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     window.open(
       `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
@@ -1152,7 +1163,7 @@ export default function App() {
             </span>
             <span>
               <strong>{cartCount}</strong>
-              <small>RM{cartTotal.toFixed(2)}</small>
+              <small>RM{cartFinalTotal.toFixed(2)}</small>
             </span>
           </button>
 
@@ -1200,7 +1211,24 @@ export default function App() {
                 )}
 
                 <div className="checkout-actions">
-                  <strong>RM{cartTotal.toFixed(2)}</strong>
+                  <div className="cart-totals">
+                    <p>
+                      <span>Subtotal</span>
+                      <strong>RM{cartTotal.toFixed(2)}</strong>
+                    </p>
+                    <p>
+                      <span>Discount above RM{discountThreshold}</span>
+                      <strong>
+                        {cartDiscount > 0
+                          ? `-RM${cartDiscount.toFixed(2)}`
+                          : "RM0.00"}
+                      </strong>
+                    </p>
+                    <p className="cart-total-final">
+                      <span>Total</span>
+                      <strong>RM{cartFinalTotal.toFixed(2)}</strong>
+                    </p>
+                  </div>
                   <button
                     className="checkout-button"
                     disabled={cart.length === 0}

@@ -266,6 +266,41 @@
   gap: 8px;
 }
 
+.cart-totals {
+  display: grid;
+  width: 100%;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.cart-totals p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #777777;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cart-totals strong {
+  color: #111111;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cart-total-final {
+  padding-top: 7px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cart-total-final strong {
+  font-size: 17px;
+}
+
 .checkout-button,
 .cart-button,
 .admin-login button,
@@ -1467,6 +1502,23 @@
 :root[data-theme="dark"] .low-stock {
   background: #303030;
   color: #f3f3f3;
+}
+
+:root[data-theme="dark"] .cart-totals {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="dark"] .cart-totals p {
+  color: #b7b7b7;
+}
+
+:root[data-theme="dark"] .cart-totals strong {
+  color: #f5f5f5;
+}
+
+:root[data-theme="dark"] .cart-total-final {
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 900px) {
