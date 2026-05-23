@@ -212,6 +212,7 @@ export default function App() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [draggedProductId, setDraggedProductId] = useState(null);
   const [selectedFlavours, setSelectedFlavours] = useState(() =>
     Object.fromEntries(
       products.map((product) => [product.id, product.flavours[0]]),
@@ -460,6 +461,64 @@ export default function App() {
     }
   }
 
+  function handleProductDragStart(event, productId) {
+    if (adminSearchTerm) {
+      event.preventDefault();
+      return;
+    }
+
+    setDraggedProductId(productId);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(productId));
+  }
+
+  function handleProductDragOver(event) {
+    if (!adminSearchTerm && draggedProductId) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    }
+  }
+
+  function handleProductDrop(event, targetProductId) {
+    event.preventDefault();
+
+    if (adminSearchTerm) {
+      return;
+    }
+
+    const sourceProductId =
+      draggedProductId || Number(event.dataTransfer.getData("text/plain"));
+
+    if (!sourceProductId || sourceProductId === targetProductId) {
+      setDraggedProductId(null);
+      return;
+    }
+
+    setStoreProducts((currentProducts) => {
+      const sourceIndex = currentProducts.findIndex(
+        (product) => product.id === sourceProductId,
+      );
+      const targetIndex = currentProducts.findIndex(
+        (product) => product.id === targetProductId,
+      );
+
+      if (sourceIndex < 0 || targetIndex < 0) {
+        return currentProducts;
+      }
+
+      const nextProducts = [...currentProducts];
+      const [movedProduct] = nextProducts.splice(sourceIndex, 1);
+      nextProducts.splice(targetIndex, 0, movedProduct);
+      return nextProducts;
+    });
+
+    setDraggedProductId(null);
+  }
+
+  function handleProductDragEnd() {
+    setDraggedProductId(null);
+  }
+
   function updateProduct(productId, field, value) {
     setStoreProducts((currentProducts) =>
       currentProducts.map((product) =>
@@ -702,7 +761,11 @@ export default function App() {
               />
             </label>
             <p>
-              Showing {filteredAdminProducts.length} of {storeProducts.length}
+              {adminSearchTerm
+                ? "Clear search to reorder"
+                : "Drag rows to arrange"}{" "}
+              {" - "} Showing {filteredAdminProducts.length} of{" "}
+              {storeProducts.length}
             </p>
           </section>
 
@@ -725,7 +788,16 @@ export default function App() {
 
               return (
                 <article
-                  className={`control-row ${isExpanded ? "expanded" : ""}`}
+                  className={`control-row ${isExpanded ? "expanded" : ""} ${
+                    draggedProductId === product.id ? "dragging" : ""
+                  }`}
+                  draggable={!adminSearchTerm}
+                  onDragEnd={handleProductDragEnd}
+                  onDragOver={handleProductDragOver}
+                  onDragStart={(event) =>
+                    handleProductDragStart(event, product.id)
+                  }
+                  onDrop={(event) => handleProductDrop(event, product.id)}
                   key={product.id}
                 >
                   <button
@@ -735,6 +807,9 @@ export default function App() {
                     }
                     type="button"
                   >
+                    <span className="drag-handle" aria-hidden="true">
+                      ::
+                    </span>
                     <img src={product.image} alt="" />
                     <span>
                       <strong>{product.name}</strong>
@@ -888,7 +963,10 @@ export default function App() {
             </div>
             <div className="hero-banner-copy">
               <p className="eyebrow">Featured drop</p>
-              <h1>SPACEBAR by DOTMOD</h1>
+              <h1>
+                SPACEBAR by <br />
+                DOTMOD
+              </h1>
               <p>Browse flavours and checkout through WhatsApp.</p>
             </div>
           </section>

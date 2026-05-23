@@ -102,22 +102,9 @@
   isolation: isolate;
 }
 
-.store-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(53, 22, 38, 0.88), rgba(53, 22, 38, 0.36) 44%, rgba(53, 22, 38, 0.04)),
-    linear-gradient(0deg, rgba(53, 22, 38, 0.3), transparent 48%);
-}
-
 .hero-image-track {
   position: absolute;
   inset: 0;
-  height: 122%;
-  animation: hero-pan-vertical 16s ease-in-out infinite alternate;
 }
 
 .hero-image-track img {
@@ -126,6 +113,7 @@
   display: block;
   object-fit: cover;
   object-position: top center;
+  animation: hero-pan-vertical 16s ease-in-out infinite alternate;
 }
 
 .hero-banner-copy {
@@ -133,9 +121,10 @@
   z-index: 2;
   display: grid;
   align-content: end;
-  max-width: 430px;
+  max-width: 360px;
   min-height: 260px;
-  padding: 32px;
+  padding: 28px;
+  text-shadow: 0 2px 16px rgba(53, 22, 38, 0.46);
 }
 
 .hero-banner-copy h1 {
@@ -156,11 +145,11 @@
 
 @keyframes hero-pan-vertical {
   from {
-    transform: translateY(0);
+    object-position: top center;
   }
 
   to {
-    transform: translateY(-18%);
+    object-position: bottom center;
   }
 }
 
@@ -965,6 +954,7 @@
   overflow: hidden;
   border-radius: 14px;
   transition:
+    opacity 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease;
 }
@@ -978,9 +968,18 @@
   transform: none;
 }
 
+.control-row[draggable="true"] {
+  cursor: grab;
+}
+
+.control-row.dragging {
+  opacity: 0.48;
+  box-shadow: 0 18px 42px rgba(111, 29, 56, 0.18);
+}
+
 .control-card-summary {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  grid-template-columns: 22px 44px minmax(0, 1fr) auto auto;
   align-items: center;
   width: 100%;
   gap: 8px;
@@ -990,6 +989,15 @@
   cursor: pointer;
   padding: 8px 10px;
   text-align: left;
+}
+
+.drag-handle {
+  color: #b77761;
+  cursor: grab;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  line-height: 1;
 }
 
 .control-card-summary img {
@@ -1239,10 +1247,6 @@
     border-radius: 22px;
   }
 
-  .hero-image-track {
-    height: 134%;
-  }
-
   .hero-banner-copy {
     max-width: 300px;
     min-height: 210px;
@@ -1370,7 +1374,7 @@
   }
 
   .control-card-summary {
-    grid-template-columns: 42px minmax(0, 1fr) auto;
+    grid-template-columns: 18px 42px minmax(0, 1fr) auto;
   }
 
   .control-card-summary img {
@@ -1378,7 +1382,7 @@
   }
 
   .control-card-summary em {
-    grid-column: 2 / -1;
+    grid-column: 3 / -1;
   }
 
   .control-list {
