@@ -8,6 +8,7 @@ const productsVersionStorageKey = "summer-vibes-products-version";
 const productsVersion = "2026-05-18-spacebar-flavours";
 const adminPasscode = "2622";
 const adminSessionKey = "summer-vibes-admin";
+const themeStorageKey = "summer-vibes-theme";
 const defaultProductImage =
   "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=80";
 const productsApiPath = "/api/products";
@@ -215,6 +216,9 @@ export default function App() {
   const [adminSearch, setAdminSearch] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [draggedProductId, setDraggedProductId] = useState(null);
+  const [theme, setTheme] = useState(
+    () => window.localStorage.getItem(themeStorageKey) || "light",
+  );
   const [selectedFlavours, setSelectedFlavours] = useState(() =>
     Object.fromEntries(
       products.map((product) => [product.id, product.flavours[0]]),
@@ -260,6 +264,11 @@ export default function App() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem(themeStorageKey, theme);
+  }, [theme]);
 
   useEffect(() => {
     const serializedProducts = serializeProducts(storeProducts);
@@ -665,6 +674,10 @@ export default function App() {
     setIsAdminUnlocked(false);
   }
 
+  function toggleTheme() {
+    setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+  }
+
   return (
     <main className={`store ${isAdminRoute ? "admin-store" : ""}`}>
       <nav className="store-nav" aria-label="Store sections">
@@ -673,27 +686,60 @@ export default function App() {
           src="/summer-vibes-logo.png"
           alt="Summer Vibes"
         />
-        <div>
+        <div className="store-nav-actions">
           <button
-            className={!isAdminRoute ? "active" : ""}
-            onClick={() => {
-              window.history.pushState({}, "", "/");
-              window.location.reload();
-            }}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+            className="theme-toggle"
+            onClick={toggleTheme}
             type="button"
           >
-            Shop
+            {theme === "dark" ? (
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" fill="currentColor" r="4" />
+                <path
+                  d="M12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17m10-10 2.1-2.1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeWidth="1.8"
+                />
+              </svg>
+            ) : (
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path
+                  d="M20 15.5A8.2 8.2 0 0 1 8.5 4 8.2 8.2 0 1 0 20 15.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+            )}
           </button>
-          <button
-            className={isAdminRoute ? "active" : ""}
-            onClick={() => {
-              window.history.pushState({}, "", "/admin");
-              window.location.reload();
-            }}
-            type="button"
+          <a
+            aria-label="Chat with Summer Vibes on WhatsApp"
+            className="whatsapp-link"
+            href={`https://wa.me/${whatsappNumber}`}
+            rel="noreferrer"
+            target="_blank"
           >
-            Admin
-          </button>
+            <svg
+              aria-hidden="true"
+              fill="none"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7.2 19.4 4 20.2l.9-3.1a8 8 0 1 1 2.3 2.3Z"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+              <path
+                d="M8.9 8.7c.2-.5.4-.5.8-.5h.5c.2 0 .4.1.5.4l.7 1.5c.1.3.1.5-.1.7l-.4.5c-.2.2-.2.4 0 .6.5.9 1.3 1.7 2.2 2.1.2.1.4.1.6-.1l.6-.6c.2-.2.4-.2.7-.1l1.4.7c.3.2.4.4.4.7 0 .5-.1.9-.5 1.2-.4.4-1 .5-1.6.4-3.5-.8-6.2-3.4-7-6.9-.1-.6.1-1.1.5-1.6Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span>Whatsapp</span>
+          </a>
         </div>
       </nav>
 
