@@ -117,13 +117,13 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
     return product
       ? {
           ...product,
-          name: savedProduct.name || product.name,
-          category: savedProduct.category || product.category,
-          price: savedProduct.price || product.price,
-          rating: savedProduct.rating || product.rating,
-          tag: savedProduct.tag || product.tag,
-          description: savedProduct.description || product.description,
-          image: savedProduct.image || product.image,
+          name: savedProduct.name ?? product.name,
+          category: savedProduct.category ?? product.category,
+          price: savedProduct.price ?? product.price,
+          rating: savedProduct.rating ?? product.rating,
+          tag: savedProduct.tag ?? product.tag,
+          description: savedProduct.description ?? product.description,
+          image: savedProduct.image ?? product.image,
           flavours: normalizeFlavours(
             savedProduct.flavours,
             savedProduct.stock ?? product.stock,
@@ -131,15 +131,15 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
         }
       : {
           id: savedProduct.id,
-          name: savedProduct.name || "New product",
-          category: savedProduct.category || "Disposable Vape",
-          price: savedProduct.price || "RM0",
-          rating: savedProduct.rating || "4.5",
-          tag: savedProduct.tag || "New",
+          name: savedProduct.name ?? "New product",
+          category: savedProduct.category ?? "Disposable Vape",
+          price: savedProduct.price ?? "RM0",
+          rating: savedProduct.rating ?? "4.5",
+          tag: savedProduct.tag ?? "New",
           description:
-            savedProduct.description ||
+            savedProduct.description ??
             "Choose a flavour and add this product to your cart.",
-          image: savedProduct.image || defaultProductImage,
+          image: savedProduct.image ?? defaultProductImage,
           flavours: normalizeFlavours(savedProduct.flavours),
         };
   });
@@ -1123,6 +1123,10 @@ export default function App() {
                   <div className="product-info">
                     <p className="category">{product.category}</p>
                     <h3>{product.name}</h3>
+                    <p className="product-subtitle">
+                      {product.description ||
+                        "Choose a flavour and add this product to your cart."}
+                    </p>
                     <div
                       className="flavour-select"
                       onClick={(event) => event.stopPropagation()}
