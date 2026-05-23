@@ -1329,14 +1329,6 @@ export default function App() {
                           <strong>{detailPrice}</strong>
                           Price
                         </span>
-                        <span>
-                          <strong>{selectedProduct.rating}</strong>
-                          Rating
-                        </span>
-                        <span>
-                          <strong>{selectedProduct.nicotine || "-"}</strong>
-                          Nicotine
-                        </span>
                       </div>
 
                       <label className="detail-flavour">
@@ -1374,7 +1366,10 @@ export default function App() {
                         <button
                           className="cart-button"
                           disabled={isDetailSoldOut}
-                          onClick={() => addToCart(selectedProduct)}
+                          onClick={() => {
+                            addToCart(selectedProduct);
+                            closeProductDetail();
+                          }}
                           type="button"
                         >
                           {isDetailSoldOut ? "Sold Out" : "Add to Cart"}
