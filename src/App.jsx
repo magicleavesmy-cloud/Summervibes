@@ -211,6 +211,7 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedFlavours, setSelectedFlavours] = useState(() =>
     Object.fromEntries(
       products.map((product) => [product.id, product.flavours[0]]),
@@ -286,10 +287,11 @@ export default function App() {
     function closeDetailWithEscape(event) {
       if (event.key === "Escape") {
         closeProductDetail();
+        closeCart();
       }
     }
 
-    if (!selectedProductId) {
+    if (!selectedProductId && !isCartOpen) {
       return;
     }
 
@@ -298,7 +300,7 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", closeDetailWithEscape);
     };
-  }, [selectedProductId]);
+  }, [isCartOpen, selectedProductId]);
 
   const productById = useMemo(
     () => new Map(storeProducts.map((product) => [product.id, product])),
@@ -439,6 +441,14 @@ export default function App() {
     setSelectedProductId(null);
   }
 
+  function openCart() {
+    setIsCartOpen(true);
+  }
+
+  function closeCart() {
+    setIsCartOpen(false);
+  }
+
   function handleProductCardKeyDown(event, productId) {
     if (event.target !== event.currentTarget) {
       return;
@@ -577,12 +587,6 @@ export default function App() {
       `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
       "_blank",
     );
-  }
-
-  function scrollToCart() {
-    document
-      .getElementById("checkout-cart")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function unlockAdmin(event) {
@@ -886,50 +890,6 @@ export default function App() {
             </p>
           </section>
 
-          <section
-            className="checkout-panel"
-            id="checkout-cart"
-            aria-label="Checkout cart"
-          >
-            <div>
-              <p className="eyebrow">WhatsApp checkout</p>
-              <h2>Your cart</h2>
-            </div>
-
-            {cart.length === 0 ? (
-              <p className="empty-cart">Add products to start an order.</p>
-            ) : (
-              <div className="cart-items">
-                {cart.map((item) => (
-                  <CartItem
-                    addToCart={addToCart}
-                    item={item}
-                    key={item.cartId}
-                    product={productById.get(item.id)}
-                    removeFromCart={removeFromCart}
-                  />
-                ))}
-              </div>
-            )}
-
-            <div className="checkout-actions">
-              <strong>RM{cartTotal.toFixed(2)}</strong>
-              <button
-                className="checkout-button"
-                disabled={cart.length === 0}
-                onClick={checkoutWithWhatsApp}
-                type="button"
-              >
-                Checkout with WhatsApp
-              </button>
-              {cart.length > 0 && (
-                <button className="clear-button" onClick={clearCart} type="button">
-                  Clear
-                </button>
-              )}
-            </div>
-          </section>
-
           <section className="product-grid">
             {storeProducts.map((product) => {
               const availableFlavours = getFlavourNames(product);
@@ -1040,7 +1000,7 @@ export default function App() {
           <button
             aria-label={`Open cart with ${cartCount} items`}
             className={`floating-cart ${cartCount > 0 ? "has-items" : ""}`}
-            onClick={scrollToCart}
+            onClick={openCart}
             type="button"
           >
             <span className="floating-cart-icon" aria-hidden="true">
@@ -1051,6 +1011,73 @@ export default function App() {
               <small>RM{cartTotal.toFixed(2)}</small>
             </span>
           </button>
+
+          {isCartOpen && (
+            <section
+              aria-label="Cart details"
+              className="cart-popover-backdrop"
+              onClick={closeCart}
+            >
+              <aside
+                aria-modal="true"
+                className="cart-popover"
+                onClick={(event) => event.stopPropagation()}
+                role="dialog"
+              >
+                <div className="cart-popover-header">
+                  <div>
+                    <p className="eyebrow">WhatsApp checkout</p>
+                    <h2>Your cart</h2>
+                  </div>
+                  <button
+                    aria-label="Close cart"
+                    className="cart-popover-close"
+                    onClick={closeCart}
+                    type="button"
+                  >
+                    x
+                  </button>
+                </div>
+
+                {cart.length === 0 ? (
+                  <p className="empty-cart">Add products to start an order.</p>
+                ) : (
+                  <div className="cart-items">
+                    {cart.map((item) => (
+                      <CartItem
+                        addToCart={addToCart}
+                        item={item}
+                        key={item.cartId}
+                        product={productById.get(item.id)}
+                        removeFromCart={removeFromCart}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <div className="checkout-actions">
+                  <strong>RM{cartTotal.toFixed(2)}</strong>
+                  <button
+                    className="checkout-button"
+                    disabled={cart.length === 0}
+                    onClick={checkoutWithWhatsApp}
+                    type="button"
+                  >
+                    Checkout with WhatsApp
+                  </button>
+                  {cart.length > 0 && (
+                    <button
+                      className="clear-button"
+                      onClick={clearCart}
+                      type="button"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </aside>
+            </section>
+          )}
 
           {selectedProduct &&
             (() => {
