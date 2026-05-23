@@ -476,8 +476,9 @@
 
 .product-grid {
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
 }
 
 .product-card {
@@ -505,10 +506,10 @@
 
 .image-wrap {
   position: relative;
-  margin: 12px 12px 0;
-  aspect-ratio: 1 / 0.86;
+  margin: 10px 10px 0;
+  aspect-ratio: 1 / 0.82;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 14px;
   background:
     radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.9), transparent 45%),
     #f4ddcd;
@@ -518,15 +519,15 @@
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .image-wrap span {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
   max-width: calc(100% - 20px);
-  padding: 5px 9px;
+  padding: 4px 8px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 252, 246, 0.9);
@@ -538,27 +539,27 @@
 }
 
 .product-info {
-  flex: 1;
-  padding: 14px 14px 0;
+  flex: 0 0 auto;
+  padding: 10px 12px 0;
 }
 
 .category {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-size: 10px;
 }
 
 .product-card h3 {
-  min-height: 42px;
+  min-height: 0;
   margin: 0;
   color: #351c28;
-  font-size: 17px;
-  line-height: 1.22;
+  font-size: 15px;
+  line-height: 1.2;
 }
 
 .flavour-select {
   display: grid;
-  gap: 7px;
-  margin-top: 12px;
+  gap: 5px;
+  margin-top: 9px;
 }
 
 .flavour-select > span {
@@ -574,7 +575,7 @@
 
 .flavour-trigger {
   width: 100%;
-  min-height: 38px;
+  min-height: 34px;
   border: 1px solid rgba(176, 119, 97, 0.2);
   border-radius: 12px;
   background: #fffaf2;
@@ -582,7 +583,7 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 800;
-  padding: 8px 10px;
+  padding: 7px 9px;
 }
 
 .flavour-trigger:focus,
@@ -626,12 +627,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .product-meta strong {
   color: #6f1d38;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .product-meta span {
@@ -643,15 +644,15 @@
 
 .detail-hint {
   display: inline-flex;
-  margin-top: 10px;
+  margin-top: 7px;
   color: #b77761;
   font-size: 12px;
   font-weight: 900;
 }
 
 .cart-button {
-  margin: 14px;
-  padding: 10px 12px;
+  margin: 10px 12px 12px;
+  padding: 9px 12px;
   font-size: 12px;
 }
 
@@ -1655,7 +1656,7 @@
 
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
   }
 
   .product-card {
@@ -1663,26 +1664,27 @@
   }
 
   .image-wrap {
-    margin: 9px 9px 0;
-    border-radius: 14px;
+    margin: 8px 8px 0;
+    border-radius: 12px;
   }
 
   .product-info {
-    padding: 11px 10px 0;
+    padding: 9px 9px 0;
   }
 
   .product-card h3 {
-    min-height: 38px;
-    font-size: 14px;
+    min-height: 0;
+    font-size: 13px;
   }
 
   .flavour-trigger {
+    min-height: 32px;
     font-size: 11px;
   }
 
   .cart-button {
-    margin: 10px;
-    padding: 9px 10px;
+    margin: 8px 9px 9px;
+    padding: 8px 9px;
   }
 
   .floating-cart {
