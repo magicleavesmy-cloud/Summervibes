@@ -47,7 +47,7 @@ export const products = [
     description: "Compact disposable vape with smooth flavour delivery.",
     flavours: elfbarD1Flavours,
     image:
-      "https://ecloudsbd.com/assets/product-images/54c13bbd79798165a965809ac821266b.elf-bar-raya-d1-13000puffs--ribena-lychee.webp",
+      "https://d2j6dbq0eux0bg.cloudfront.net/images/44274057/4151158064.png",
   },
   {
     id: 2,

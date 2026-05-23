@@ -209,6 +209,8 @@ export default function App() {
   const [storeProducts, setStoreProducts] = useState(getInitialProducts);
   const [isRemoteSyncReady, setIsRemoteSyncReady] = useState(false);
   const [cart, setCart] = useState([]);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [adminSearch, setAdminSearch] = useState("");
   const [selectedFlavours, setSelectedFlavours] = useState(() =>
     Object.fromEntries(
       products.map((product) => [product.id, product.flavours[0]]),
@@ -280,10 +282,32 @@ export default function App() {
     return () => window.clearTimeout(saveTimeout);
   }, [isRemoteSyncReady, storeProducts]);
 
+  useEffect(() => {
+    function closeDetailWithEscape(event) {
+      if (event.key === "Escape") {
+        closeProductDetail();
+      }
+    }
+
+    if (!selectedProductId) {
+      return;
+    }
+
+    window.addEventListener("keydown", closeDetailWithEscape);
+
+    return () => {
+      window.removeEventListener("keydown", closeDetailWithEscape);
+    };
+  }, [selectedProductId]);
+
   const productById = useMemo(
     () => new Map(storeProducts.map((product) => [product.id, product])),
     [storeProducts],
   );
+
+  const selectedProduct = selectedProductId
+    ? productById.get(selectedProductId)
+    : null;
 
   const cartTotal = useMemo(
     () =>
@@ -299,6 +323,50 @@ export default function App() {
   );
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const adminSearchTerm = adminSearch.trim().toLowerCase();
+  const adminStats = useMemo(() => {
+    const totalStock = storeProducts.reduce(
+      (total, product) => total + getTotalStock(product),
+      0,
+    );
+    const totalFlavours = storeProducts.reduce(
+      (total, product) => total + product.flavours.length,
+      0,
+    );
+    const lowStockProducts = storeProducts.filter((product) => {
+      const totalStockForProduct = getTotalStock(product);
+      return totalStockForProduct > 0 && totalStockForProduct <= 3;
+    }).length;
+    const outOfStockProducts = storeProducts.filter(
+      (product) => getTotalStock(product) === 0,
+    ).length;
+
+    return {
+      lowStockProducts,
+      outOfStockProducts,
+      totalFlavours,
+      totalStock,
+    };
+  }, [storeProducts]);
+  const filteredAdminProducts = useMemo(() => {
+    if (!adminSearchTerm) {
+      return storeProducts;
+    }
+
+    return storeProducts.filter((product) => {
+      const searchableProduct = [
+        product.name,
+        product.category,
+        product.price,
+        product.tag,
+        ...product.flavours.map((flavour) => flavour.name),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchableProduct.includes(adminSearchTerm);
+    });
+  }, [adminSearchTerm, storeProducts]);
 
   function addToCart(product, flavour) {
     const availableFlavours = getFlavourNames(product);
@@ -361,6 +429,25 @@ export default function App() {
 
   function clearCart() {
     setCart([]);
+  }
+
+  function openProductDetail(productId) {
+    setSelectedProductId(productId);
+  }
+
+  function closeProductDetail() {
+    setSelectedProductId(null);
+  }
+
+  function handleProductCardKeyDown(event, productId) {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openProductDetail(productId);
+    }
   }
 
   function updateProduct(productId, field, value) {
@@ -508,7 +595,7 @@ export default function App() {
   }
 
   return (
-    <main className="store">
+    <main className={`store ${isAdminRoute ? "admin-store" : ""}`}>
       <nav className="store-nav" aria-label="Store sections">
         <strong>Summer Vibes</strong>
         <div>
@@ -556,14 +643,10 @@ export default function App() {
         <section className="control-page" aria-label="Product controls">
           <div className="control-header">
             <div>
-              <p className="eyebrow">Control page</p>
-              <h1>Edit products</h1>
+              <p className="eyebrow">Inventory workspace</p>
+              <h1>Product control</h1>
             </div>
             <div className="control-header-actions">
-              <p>
-                Change product names and set quantities for each flavour. Updates
-                save automatically.
-              </p>
               <div>
                 <button onClick={addProduct} type="button">
                   Add product
@@ -575,10 +658,60 @@ export default function App() {
             </div>
           </div>
 
+          <section className="control-overview" aria-label="Inventory overview">
+            <article>
+              <span>Total stock</span>
+              <strong>{adminStats.totalStock}</strong>
+            </article>
+            <article>
+              <span>Products</span>
+              <strong>{storeProducts.length}</strong>
+            </article>
+            <article>
+              <span>Flavours</span>
+              <strong>{adminStats.totalFlavours}</strong>
+            </article>
+            <article>
+              <span>Low stock</span>
+              <strong>{adminStats.lowStockProducts}</strong>
+            </article>
+            <article>
+              <span>Out</span>
+              <strong>{adminStats.outOfStockProducts}</strong>
+            </article>
+          </section>
+
+          <section className="control-toolbar" aria-label="Product search">
+            <label>
+              <span>Search inventory</span>
+              <input
+                onChange={(event) => setAdminSearch(event.target.value)}
+                placeholder="Search product, flavour, tag..."
+                type="search"
+                value={adminSearch}
+              />
+            </label>
+            <p>
+              Showing {filteredAdminProducts.length} of {storeProducts.length}
+            </p>
+          </section>
+
           <div className="control-list">
-            {storeProducts.map((product) => {
+            {filteredAdminProducts.map((product) => {
               const totalStock = getTotalStock(product);
               const isExpanded = expandedProductId === product.id;
+              const stockStatus =
+                totalStock === 0
+                  ? "out-stock"
+                  : totalStock <= 3
+                    ? "low-stock"
+                    : "in-stock";
+              const stockLabel =
+                totalStock === 0
+                  ? "Out of stock"
+                  : totalStock <= 3
+                    ? `${totalStock} low`
+                    : `${totalStock} total`;
 
               return (
                 <article
@@ -595,51 +728,65 @@ export default function App() {
                     <img src={product.image} alt="" />
                     <span>
                       <strong>{product.name}</strong>
-                      <small>{product.flavours.length} flavours</small>
+                      <small>
+                        {product.flavours.length} flavours {" - "} {product.price}
+                      </small>
                     </span>
-                    <strong className={totalStock > 0 ? "in-stock" : "out-stock"}>
-                      {totalStock > 0 ? `${totalStock} total` : "Out of stock"}
-                    </strong>
+                    <strong className={stockStatus}>{stockLabel}</strong>
                     <em>{isExpanded ? "Close" : "Edit"}</em>
                   </button>
 
                   {isExpanded && (
                     <div className="control-card-editor">
-                      <label>
-                        <span>Product name</span>
-                        <input
-                          onChange={(event) =>
-                            updateProduct(product.id, "name", event.target.value)
-                          }
-                          value={product.name}
-                        />
-                      </label>
-                      <label>
-                        <span>Price</span>
-                        <input
-                          onChange={(event) =>
-                            updateProduct(product.id, "price", event.target.value)
-                          }
-                          placeholder="RM42"
-                          value={product.price}
-                        />
-                      </label>
-                      <label>
-                        <span>Image URL</span>
-                        <input
-                          onChange={(event) =>
-                            updateProduct(product.id, "image", event.target.value)
-                          }
-                          value={product.image}
-                        />
-                      </label>
-                      <button
-                        className="delete-product"
-                        onClick={() => deleteProduct(product.id)}
-                        type="button"
-                      >
-                        Delete product
-                      </button>
+                      <div className="product-edit-fields">
+                        <label>
+                          <span>Product name</span>
+                          <input
+                            onChange={(event) =>
+                              updateProduct(
+                                product.id,
+                                "name",
+                                event.target.value,
+                              )
+                            }
+                            value={product.name}
+                          />
+                        </label>
+                        <label>
+                          <span>Price</span>
+                          <input
+                            onChange={(event) =>
+                              updateProduct(
+                                product.id,
+                                "price",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="RM42"
+                            value={product.price}
+                          />
+                        </label>
+                        <label>
+                          <span>Image URL</span>
+                          <input
+                            onChange={(event) =>
+                              updateProduct(
+                                product.id,
+                                "image",
+                                event.target.value,
+                              )
+                            }
+                            value={product.image}
+                          />
+                        </label>
+                        <button
+                          className="delete-product"
+                          onClick={() => deleteProduct(product.id)}
+                          type="button"
+                        >
+                          Delete product
+                        </button>
+                      </div>
                       <div className="flavour-control">
                         <div className="flavour-control-header">
                           <span>Flavours</span>
@@ -714,25 +861,14 @@ export default function App() {
                 </article>
               );
             })}
+            {filteredAdminProducts.length === 0 && (
+              <p className="control-empty">No products match this search.</p>
+            )}
           </div>
         </section>
         )
       ) : (
         <>
-          <section className="store-hero">
-            <div>
-              <p className="eyebrow">Adult vape products only</p>
-              <h1>Summer Vibes Vape</h1>
-              <p className="hero-copy">
-                Curated disposable vapes, pod systems, and e-liquids with clear
-                flavour choices, simple pricing, and a cleaner shopping experience.
-              </p>
-              <p className="age-note">For adults 18+ only. Keep away from children.</p>
-            </div>
-
-            <button className="hero-button">Shop Vapes</button>
-          </section>
-
           <section className="catalog-header">
             <div>
               <p className="eyebrow">Featured products</p>
@@ -809,7 +945,16 @@ export default function App() {
               const isSoldOut = remainingStock <= 0;
 
               return (
-                <article className="product-card" key={product.id}>
+                <article
+                  className="product-card"
+                  key={product.id}
+                  onClick={() => openProductDetail(product.id)}
+                  onKeyDown={(event) =>
+                    handleProductCardKeyDown(event, product.id)
+                  }
+                  role="button"
+                  tabIndex="0"
+                >
                   <div className="image-wrap">
                     <img src={product.image} alt={product.name} />
                     <span>{product.tag}</span>
@@ -818,7 +963,10 @@ export default function App() {
                   <div className="product-info">
                     <p className="category">{product.category}</p>
                     <h3>{product.name}</h3>
-                    <div className="flavour-select">
+                    <div
+                      className="flavour-select"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <span>Choose flavour</span>
                       <label className="flavour-dropdown">
                         <span className="sr-only">
@@ -826,6 +974,7 @@ export default function App() {
                         </span>
                         <select
                           className="flavour-trigger"
+                          onClick={(event) => event.stopPropagation()}
                           onChange={(event) =>
                             setSelectedFlavours((currentFlavours) => ({
                               ...currentFlavours,
@@ -859,12 +1008,16 @@ export default function App() {
                       <strong>{selectedPrice}</strong>
                       <span>{remainingStock} left</span>
                     </div>
+                    <span className="detail-hint">View details</span>
                   </div>
 
                   <button
                     className="cart-button"
                     disabled={isSoldOut}
-                    onClick={() => addToCart(product)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      addToCart(product);
+                    }}
                     type="button"
                   >
                     {isSoldOut ? "Sold Out" : "Add to Cart"}
@@ -873,6 +1026,141 @@ export default function App() {
               );
             })}
           </section>
+
+          {selectedProduct &&
+            (() => {
+              const detailFlavours = getFlavourNames(selectedProduct);
+              const detailPreferredFlavour = detailFlavours.includes(
+                selectedFlavours[selectedProduct.id],
+              )
+                ? selectedFlavours[selectedProduct.id]
+                : detailFlavours[0];
+              const detailSelectedFlavour =
+                getFlavourStock(selectedProduct, detailPreferredFlavour) > 0
+                  ? detailPreferredFlavour
+                  : getFirstInStockFlavour(
+                      selectedProduct,
+                      detailPreferredFlavour,
+                    );
+              const detailCartQuantity = cart
+                .filter(
+                  (item) =>
+                    item.id === selectedProduct.id &&
+                    item.selectedFlavour === detailSelectedFlavour,
+                )
+                .reduce((total, item) => total + item.quantity, 0);
+              const detailStock = getFlavourStock(
+                selectedProduct,
+                detailSelectedFlavour,
+              );
+              const detailRemainingStock = Math.max(
+                detailStock - detailCartQuantity,
+                0,
+              );
+              const detailPrice = getFlavourPrice(
+                selectedProduct,
+                detailSelectedFlavour,
+              );
+              const isDetailSoldOut = detailRemainingStock <= 0;
+
+              return (
+                <section
+                  aria-label={`${selectedProduct.name} details`}
+                  className="product-detail-backdrop"
+                  onClick={closeProductDetail}
+                >
+                  <article
+                    aria-modal="true"
+                    className="product-detail"
+                    onClick={(event) => event.stopPropagation()}
+                    role="dialog"
+                  >
+                    <button
+                      aria-label="Close product details"
+                      className="detail-close"
+                      onClick={closeProductDetail}
+                      type="button"
+                    >
+                      x
+                    </button>
+
+                    <div className="detail-image">
+                      <img
+                        src={selectedProduct.image}
+                        alt={selectedProduct.name}
+                      />
+                      <span>{selectedProduct.tag}</span>
+                    </div>
+
+                    <div className="detail-content">
+                      <p className="category">{selectedProduct.category}</p>
+                      <h2>{selectedProduct.name}</h2>
+                      <p className="detail-description">
+                        {selectedProduct.description ||
+                          "Choose a flavour and add this product to your cart."}
+                      </p>
+
+                      <div className="detail-stats">
+                        <span>
+                          <strong>{detailPrice}</strong>
+                          Price
+                        </span>
+                        <span>
+                          <strong>{selectedProduct.rating}</strong>
+                          Rating
+                        </span>
+                        <span>
+                          <strong>{selectedProduct.nicotine || "-"}</strong>
+                          Nicotine
+                        </span>
+                      </div>
+
+                      <label className="detail-flavour">
+                        <span>Choose flavour</span>
+                        <select
+                          className="flavour-trigger"
+                          onChange={(event) =>
+                            setSelectedFlavours((currentFlavours) => ({
+                              ...currentFlavours,
+                              [selectedProduct.id]: event.target.value,
+                            }))
+                          }
+                          value={detailSelectedFlavour}
+                        >
+                          {detailFlavours.map((flavour) => {
+                            const hasNoStock =
+                              getFlavourStock(selectedProduct, flavour) <= 0;
+
+                            return (
+                              <option
+                                className={hasNoStock ? "no-stock-option" : ""}
+                                disabled={hasNoStock}
+                                key={flavour}
+                                value={flavour}
+                              >
+                                {hasNoStock ? `${flavour} - No stock` : flavour}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+
+                      <div className="detail-actions">
+                        <p>{detailRemainingStock} left</p>
+                        <button
+                          className="cart-button"
+                          disabled={isDetailSoldOut}
+                          onClick={() => addToCart(selectedProduct)}
+                          type="button"
+                        >
+                          {isDetailSoldOut ? "Sold Out" : "Add to Cart"}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                </section>
+              );
+            })()}
         </>
       )}
     </main>
