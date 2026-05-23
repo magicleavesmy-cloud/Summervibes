@@ -238,7 +238,9 @@ export default function App() {
 
     async function loadRemoteProducts() {
       try {
-        const response = await fetch(productsApiPath);
+        const response = await fetch(`${productsApiPath}?v=${Date.now()}`, {
+          cache: "no-store",
+        });
 
         if (response.status === 501) {
           return;

@@ -40,6 +40,11 @@ async function kvRequest(path, options = {}) {
 
 export default async function handler(request, response) {
   try {
+    response.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+
     if (!getKvConfig()) {
       return response.status(501).json({
         error:
