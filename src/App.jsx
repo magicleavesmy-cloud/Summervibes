@@ -85,6 +85,7 @@ function serializeProducts(productList) {
     price,
     rating,
     tag,
+    description,
     image,
     flavours,
   }) => ({
@@ -94,6 +95,7 @@ function serializeProducts(productList) {
     price,
     rating,
     tag,
+    description,
     image,
     flavours,
   }));
@@ -120,6 +122,7 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
           price: savedProduct.price || product.price,
           rating: savedProduct.rating || product.rating,
           tag: savedProduct.tag || product.tag,
+          description: savedProduct.description || product.description,
           image: savedProduct.image || product.image,
           flavours: normalizeFlavours(
             savedProduct.flavours,
@@ -133,6 +136,9 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
           price: savedProduct.price || "RM0",
           rating: savedProduct.rating || "4.5",
           tag: savedProduct.tag || "New",
+          description:
+            savedProduct.description ||
+            "Choose a flavour and add this product to your cart.",
           image: savedProduct.image || defaultProductImage,
           flavours: normalizeFlavours(savedProduct.flavours),
         };
@@ -551,6 +557,7 @@ export default function App() {
       price: "RM0",
       rating: "4.5",
       tag: "New",
+      description: "Choose a flavour and add this product to your cart.",
       image: defaultProductImage,
       flavours: [{ name: "New flavour", price: "", stock: 0 }],
     };
@@ -912,6 +919,34 @@ export default function App() {
                             }
                             placeholder="RM42"
                             value={product.price}
+                          />
+                        </label>
+                        <label>
+                          <span>Product tagline</span>
+                          <input
+                            onChange={(event) =>
+                              updateProduct(
+                                product.id,
+                                "tag",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Limited drop"
+                            value={product.tag}
+                          />
+                        </label>
+                        <label>
+                          <span>Product subtitle</span>
+                          <input
+                            onChange={(event) =>
+                              updateProduct(
+                                product.id,
+                                "description",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Short product detail text"
+                            value={product.description || ""}
                           />
                         </label>
                         <label>
