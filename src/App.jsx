@@ -579,6 +579,12 @@ export default function App() {
     );
   }
 
+  function scrollToCart() {
+    document
+      .getElementById("checkout-cart")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function unlockAdmin(event) {
     event.preventDefault();
 
@@ -880,7 +886,11 @@ export default function App() {
             </p>
           </section>
 
-          <section className="checkout-panel" aria-label="Checkout cart">
+          <section
+            className="checkout-panel"
+            id="checkout-cart"
+            aria-label="Checkout cart"
+          >
             <div>
               <p className="eyebrow">WhatsApp checkout</p>
               <h2>Your cart</h2>
@@ -1026,6 +1036,21 @@ export default function App() {
               );
             })}
           </section>
+
+          <button
+            aria-label={`Open cart with ${cartCount} items`}
+            className={`floating-cart ${cartCount > 0 ? "has-items" : ""}`}
+            onClick={scrollToCart}
+            type="button"
+          >
+            <span className="floating-cart-icon" aria-hidden="true">
+              Cart
+            </span>
+            <span>
+              <strong>{cartCount}</strong>
+              <small>RM{cartTotal.toFixed(2)}</small>
+            </span>
+          </button>
 
           {selectedProduct &&
             (() => {
