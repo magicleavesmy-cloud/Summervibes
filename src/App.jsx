@@ -668,7 +668,11 @@ export default function App() {
   return (
     <main className={`store ${isAdminRoute ? "admin-store" : ""}`}>
       <nav className="store-nav" aria-label="Store sections">
-        <strong>Summer Vibes</strong>
+        <img
+          className="brand-logo"
+          src="/summer-vibes-logo.png"
+          alt="Summer Vibes"
+        />
         <div>
           <button
             className={!isAdminRoute ? "active" : ""}
