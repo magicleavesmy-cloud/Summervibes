@@ -218,12 +218,14 @@ export default function App() {
   );
   const [expandedProductId, setExpandedProductId] = useState(null);
   const [storeProducts, setStoreProducts] = useState(getInitialProducts);
-  const [isRemoteSyncReady, setIsRemoteSyncReady] = useState(false);
+  const [, setIsRemoteSyncReady] = useState(false);
   const [cart, setCart] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [draggedProductId, setDraggedProductId] = useState(null);
+  const [savingProductId, setSavingProductId] = useState(null);
+  const [productUpdateStatus, setProductUpdateStatus] = useState({});
   const [theme, setTheme] = useState(
     () => window.localStorage.getItem(themeStorageKey) || "light",
   );
@@ -288,22 +290,7 @@ export default function App() {
       JSON.stringify(serializedProducts),
     );
 
-    if (!isRemoteSyncReady) {
-      return;
-    }
-
-    const saveTimeout = window.setTimeout(() => {
-      fetch(productsApiPath, {
-        body: JSON.stringify({ products: serializedProducts }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      }).catch(() => {
-        setIsRemoteSyncReady(false);
-      });
-    }, 500);
-
-    return () => window.clearTimeout(saveTimeout);
-  }, [isRemoteSyncReady, storeProducts]);
+  }, [storeProducts]);
 
   useEffect(() => {
     function closeDetailWithEscape(event) {
@@ -549,6 +536,51 @@ export default function App() {
         product.id === productId ? { ...product, [field]: value } : product,
       ),
     );
+    setProductUpdateStatus((currentStatus) => ({
+      ...currentStatus,
+      [productId]: "",
+    }));
+  }
+
+  function clearProductUpdateStatus(productId) {
+    setProductUpdateStatus((currentStatus) => ({
+      ...currentStatus,
+      [productId]: "",
+    }));
+  }
+
+  async function updateSharedProducts(productId) {
+    setSavingProductId(productId);
+    setProductUpdateStatus((currentStatus) => ({
+      ...currentStatus,
+      [productId]: "Updating...",
+    }));
+
+    try {
+      const response = await fetch(productsApiPath, {
+        body: JSON.stringify({ products: serializeProducts(storeProducts) }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to update shared products");
+      }
+
+      setIsRemoteSyncReady(true);
+      setProductUpdateStatus((currentStatus) => ({
+        ...currentStatus,
+        [productId]: "Updated",
+      }));
+    } catch {
+      setIsRemoteSyncReady(false);
+      setProductUpdateStatus((currentStatus) => ({
+        ...currentStatus,
+        [productId]: "Update failed",
+      }));
+    } finally {
+      setSavingProductId(null);
+    }
   }
 
   function addProduct() {
@@ -586,6 +618,7 @@ export default function App() {
   }
 
   function updateFlavour(productId, flavourIndex, field, value) {
+    clearProductUpdateStatus(productId);
     setStoreProducts((currentProducts) =>
       currentProducts.map((product) => {
         if (product.id !== productId) {
@@ -615,6 +648,7 @@ export default function App() {
   }
 
   function addFlavour(productId) {
+    clearProductUpdateStatus(productId);
     setStoreProducts((currentProducts) =>
       currentProducts.map((product) =>
         product.id === productId
@@ -631,6 +665,7 @@ export default function App() {
   }
 
   function removeFlavour(productId, flavourIndex) {
+    clearProductUpdateStatus(productId);
     setStoreProducts((currentProducts) =>
       currentProducts.map((product) =>
         product.id === productId
@@ -964,6 +999,21 @@ export default function App() {
                             value={product.image}
                           />
                         </label>
+                        <div className="product-update-actions">
+                          <button
+                            className="update-product"
+                            disabled={savingProductId === product.id}
+                            onClick={() => updateSharedProducts(product.id)}
+                            type="button"
+                          >
+                            {savingProductId === product.id
+                              ? "Updating..."
+                              : "Update"}
+                          </button>
+                          {productUpdateStatus[product.id] && (
+                            <span>{productUpdateStatus[product.id]}</span>
+                          )}
+                        </div>
                         <button
                           className="delete-product"
                           onClick={() => deleteProduct(product.id)}

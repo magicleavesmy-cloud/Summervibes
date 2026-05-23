@@ -939,6 +939,7 @@
 
 .control-header-actions button,
 .remove-flavour,
+.update-product,
 .delete-product {
   border: 1px solid rgba(105, 58, 48, 0.1);
   border-radius: 999px;
@@ -1172,6 +1173,29 @@
   padding: 7px 11px;
 }
 
+.product-update-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.product-update-actions span {
+  color: #777777;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.update-product {
+  background: #171717;
+  color: #ffffff;
+}
+
+.update-product:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
 .delete-product {
   justify-self: start;
   border-color: rgba(111, 29, 56, 0.16);
@@ -1292,6 +1316,7 @@
 .clear-button,
 .control-header-actions button,
 .remove-flavour,
+.update-product,
 .delete-product,
 .cart-popover-close,
 .detail-close {
@@ -1306,6 +1331,7 @@
 .cart-button,
 .admin-login button,
 .add-flavour,
+.update-product,
 .floating-cart.has-items {
   background: #171717;
   color: #ffffff;
@@ -1315,7 +1341,8 @@
 .checkout-button:hover:not(:disabled),
 .cart-button:hover:not(:disabled),
 .admin-login button:hover,
-.add-flavour:hover {
+.add-flavour:hover,
+.update-product:hover:not(:disabled) {
   background: #2a2a2a;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.18);
 }
@@ -1470,6 +1497,7 @@
 :root[data-theme="dark"] .clear-button,
 :root[data-theme="dark"] .control-header-actions button,
 :root[data-theme="dark"] .remove-flavour,
+:root[data-theme="dark"] .update-product,
 :root[data-theme="dark"] .delete-product,
 :root[data-theme="dark"] .cart-popover-close,
 :root[data-theme="dark"] .detail-close {
@@ -1483,6 +1511,7 @@
 :root[data-theme="dark"] .cart-button,
 :root[data-theme="dark"] .admin-login button,
 :root[data-theme="dark"] .add-flavour,
+:root[data-theme="dark"] .update-product,
 :root[data-theme="dark"] .floating-cart.has-items {
   background: #f3f3f3;
   color: #111111;
