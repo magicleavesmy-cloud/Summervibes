@@ -104,7 +104,7 @@ export const products = [
     description: "Starter kit with simple controls and convenient USB-C charging.",
     flavours: spacebarFlavours,
     image:
-      "https://hypervape.my/wp-content/uploads/2024/08/456580586_528462423191481_1793938225607092952_n.jpg",
+      "https://vapehaus.com.my/cdn/shop/files/space_bar_poster_3.jpg?v=1778158986&width=1445",
   },
   {
     id: 5,

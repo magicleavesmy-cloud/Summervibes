@@ -879,6 +879,20 @@ export default function App() {
         )
       ) : (
         <>
+          <section className="store-hero" aria-label="Featured promotion">
+            <div className="hero-image-track" aria-hidden="true">
+              <img
+                src="https://vapehaus.com.my/cdn/shop/files/space_bar_poster_3.jpg?v=1778158986&width=1445"
+                alt=""
+              />
+            </div>
+            <div className="hero-banner-copy">
+              <p className="eyebrow">Featured drop</p>
+              <h1>SPACEBAR by DOTMOD</h1>
+              <p>Browse flavours and checkout through WhatsApp.</p>
+            </div>
+          </section>
+
           <section className="catalog-header">
             <div>
               <p className="eyebrow">Featured products</p>
