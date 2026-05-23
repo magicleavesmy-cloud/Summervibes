@@ -1362,7 +1362,6 @@ export default function App() {
                       </label>
 
                       <div className="detail-actions">
-                        <p>{detailRemainingStock} left</p>
                         <button
                           className="cart-button"
                           disabled={isDetailSoldOut}
