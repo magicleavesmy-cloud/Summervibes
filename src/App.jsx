@@ -101,10 +101,15 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
     return fallbackProducts;
   }
 
-  const mergedProducts = fallbackProducts.map((product) => {
-    const savedProduct = savedProducts.find((item) => item.id === product.id);
+  const fallbackProductById = new Map(
+    fallbackProducts.map((product) => [product.id, product]),
+  );
+  const savedProductIds = new Set(savedProducts.map((product) => product.id));
 
-    return savedProduct
+  const mergedProducts = savedProducts.map((savedProduct) => {
+    const product = fallbackProductById.get(savedProduct.id);
+
+    return product
       ? {
           ...product,
           name: savedProduct.name || product.name,
@@ -118,26 +123,23 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
             savedProduct.stock ?? product.stock,
           ),
         }
-      : product;
+      : {
+          id: savedProduct.id,
+          name: savedProduct.name || "New product",
+          category: savedProduct.category || "Disposable Vape",
+          price: savedProduct.price || "RM0",
+          rating: savedProduct.rating || "4.5",
+          tag: savedProduct.tag || "New",
+          image: savedProduct.image || defaultProductImage,
+          flavours: normalizeFlavours(savedProduct.flavours),
+        };
   });
 
-  const addedProducts = savedProducts
-    .filter(
-      (savedProduct) =>
-        !fallbackProducts.some((product) => product.id === savedProduct.id),
-    )
-    .map((savedProduct) => ({
-      id: savedProduct.id,
-      name: savedProduct.name || "New product",
-      category: savedProduct.category || "Disposable Vape",
-      price: savedProduct.price || "RM0",
-      rating: savedProduct.rating || "4.5",
-      tag: savedProduct.tag || "New",
-      image: savedProduct.image || defaultProductImage,
-      flavours: normalizeFlavours(savedProduct.flavours),
-    }));
+  const newFallbackProducts = fallbackProducts.filter(
+    (product) => !savedProductIds.has(product.id),
+  );
 
-  return [...mergedProducts, ...addedProducts];
+  return [...mergedProducts, ...newFallbackProducts];
 }
 
 function getInitialProducts() {
