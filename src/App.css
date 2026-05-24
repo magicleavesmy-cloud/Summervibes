@@ -556,6 +556,23 @@
   line-height: 1.2;
 }
 
+.puff-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(79, 143, 103, 0.14);
+  color: #315f44;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 .product-subtitle {
   display: -webkit-box;
   margin-top: 5px;
@@ -1154,6 +1171,14 @@
   white-space: nowrap;
 }
 
+.control-card-summary .puff-chip {
+  max-width: 88px;
+  background: rgba(79, 143, 103, 0.14);
+  color: #315f44;
+  font-size: 10px;
+  font-style: normal;
+}
+
 .control-card-summary small {
   color: #987b75;
   font-size: 10px;
@@ -1213,6 +1238,16 @@
   letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.control-editor-header .puff-chip {
+  max-width: 110px;
+}
+
+:root[data-theme="dark"] .puff-chip,
+:root[data-theme="dark"] .control-card-summary .puff-chip {
+  background: rgba(79, 143, 103, 0.22);
+  color: #d7f2df;
 }
 
 .control-editor-header span {

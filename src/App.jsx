@@ -82,6 +82,7 @@ function serializeProducts(productList) {
     price,
     rating,
     tag,
+    puffs,
     description,
     image,
     isVisible,
@@ -93,6 +94,7 @@ function serializeProducts(productList) {
     price,
     rating,
     tag,
+    puffs,
     description,
     image,
     isVisible: isVisible !== false,
@@ -121,6 +123,7 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
           price: savedProduct.price ?? product.price,
           rating: savedProduct.rating ?? product.rating,
           tag: savedProduct.tag ?? product.tag,
+          puffs: savedProduct.puffs ?? product.puffs ?? "",
           description: savedProduct.description ?? product.description,
           image: savedProduct.image ?? product.image,
           isVisible: savedProduct.isVisible !== false,
@@ -136,6 +139,7 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
           price: savedProduct.price ?? "RM0",
           rating: savedProduct.rating ?? "4.5",
           tag: savedProduct.tag ?? "New",
+          puffs: savedProduct.puffs ?? "",
           description:
             savedProduct.description ??
             "Choose a flavour and add this product to your cart.",
@@ -384,6 +388,7 @@ export default function App() {
         product.category,
         product.price,
         product.tag,
+        product.puffs,
         ...product.flavours.map((flavour) => flavour.name),
       ]
         .join(" ")
@@ -1013,7 +1018,12 @@ export default function App() {
                       </span>
                       <img src={product.image} alt="" />
                       <span>
-                        <strong>{product.name}</strong>
+                        <strong>
+                          {product.name}
+                          {product.puffs && (
+                            <em className="puff-chip">{product.puffs}</em>
+                          )}
+                        </strong>
                         <small>
                           {product.flavours.length} flavours {" - "}{" "}
                           {product.price}
@@ -1040,7 +1050,14 @@ export default function App() {
                     <img src={selectedAdminProduct.image} alt="" />
                     <div>
                       <p className="eyebrow">Editing product</p>
-                      <h2>{selectedAdminProduct.name}</h2>
+                      <h2>
+                        {selectedAdminProduct.name}
+                        {selectedAdminProduct.puffs && (
+                          <em className="puff-chip">
+                            {selectedAdminProduct.puffs}
+                          </em>
+                        )}
+                      </h2>
                       <span>
                         {selectedAdminProduct.flavours.length} flavours {" - "}{" "}
                         {selectedAdminProduct.price}
@@ -1094,6 +1111,20 @@ export default function App() {
                           }
                           placeholder="RM42"
                           value={selectedAdminProduct.price}
+                        />
+                      </label>
+                      <label>
+                        <span>Puffs</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "puffs",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="30,000 Puffs"
+                          value={selectedAdminProduct.puffs || ""}
                         />
                       </label>
                       <label>
@@ -1308,7 +1339,12 @@ export default function App() {
 
                   <div className="product-info">
                     <p className="category">{product.category}</p>
-                    <h3>{product.name}</h3>
+                    <h3>
+                      {product.name}
+                      {product.puffs && (
+                        <em className="puff-chip">{product.puffs}</em>
+                      )}
+                    </h3>
                     <p className="product-subtitle">
                       {product.description ||
                         "Choose a flavour and add this product to your cart."}
@@ -1543,7 +1579,14 @@ export default function App() {
 
                     <div className="detail-content">
                       <p className="category">{selectedProduct.category}</p>
-                      <h2>{selectedProduct.name}</h2>
+                      <h2>
+                        {selectedProduct.name}
+                        {selectedProduct.puffs && (
+                          <em className="puff-chip">
+                            {selectedProduct.puffs}
+                          </em>
+                        )}
+                      </h2>
                       <p className="detail-description">
                         {selectedProduct.description ||
                           "Choose a flavour and add this product to your cart."}
