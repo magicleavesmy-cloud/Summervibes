@@ -281,6 +281,58 @@
   text-align: center;
 }
 
+.catalog-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 14px;
+  margin: -4px 0 18px;
+  border: 1px solid rgba(176, 119, 97, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 252, 246, 0.78);
+  padding: 10px;
+}
+
+.catalog-filter-bar > div {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.catalog-filter-bar > div > span {
+  color: #b77761;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.filter-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.filter-chip-row button {
+  min-height: 32px;
+  border: 1px solid rgba(176, 119, 97, 0.18);
+  border-radius: 999px;
+  background: #fffaf2;
+  color: #4d302e;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 7px 11px;
+}
+
+.filter-chip-row button.active,
+.filter-chip-row button:hover,
+.filter-chip-row button:focus-visible {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+  outline: 0;
+}
+
 .empty-cart {
   color: #9a827c;
   font-size: 14px;
@@ -637,7 +689,7 @@
 
 .search-result-details {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -1675,6 +1727,7 @@
 .control-overview span,
 .control-toolbar label span,
 .catalog-search span,
+.catalog-filter-bar > div > span,
 .drag-handle,
 .control-card-summary em {
   color: #777777;
@@ -1786,7 +1839,8 @@
 .flavour-trigger,
 .admin-login input,
 .control-row input,
-.control-toolbar input {
+.control-toolbar input,
+.filter-chip-row button {
   border-color: rgba(0, 0, 0, 0.1);
   background: #ffffff;
   color: #222222;
@@ -1841,6 +1895,7 @@
 :root[data-theme="dark"] .cart-popover,
 :root[data-theme="dark"] .product-card,
 :root[data-theme="dark"] .search-result-item,
+:root[data-theme="dark"] .catalog-filter-bar,
 :root[data-theme="dark"] .product-detail,
 :root[data-theme="dark"] .admin-login form,
 :root[data-theme="dark"] .control-header,
@@ -1900,6 +1955,7 @@
 :root[data-theme="dark"] .flavour-control-header span,
 :root[data-theme="dark"] .control-overview span,
 :root[data-theme="dark"] .catalog-search span,
+:root[data-theme="dark"] .catalog-filter-bar > div > span,
 :root[data-theme="dark"] .control-header-search span,
 :root[data-theme="dark"] .drag-handle,
 :root[data-theme="dark"] .control-card-summary em {
@@ -1938,6 +1994,14 @@
   color: #111111;
 }
 
+:root[data-theme="dark"] .filter-chip-row button.active,
+:root[data-theme="dark"] .filter-chip-row button:hover,
+:root[data-theme="dark"] .filter-chip-row button:focus-visible {
+  border-color: #f3f3f3;
+  background: #f3f3f3;
+  color: #111111;
+}
+
 :root[data-theme="dark"] .detail-close {
   border-color: #111111;
   background: #111111;
@@ -1960,6 +2024,7 @@
 :root[data-theme="dark"] .catalog-search input,
 :root[data-theme="dark"] .search-flavour-name,
 :root[data-theme="dark"] .search-result-details span,
+:root[data-theme="dark"] .filter-chip-row button,
 :root[data-theme="dark"] .admin-login input,
 :root[data-theme="dark"] .control-row input,
 :root[data-theme="dark"] .control-editor-panel input,
@@ -2028,6 +2093,10 @@
     width: 100%;
   }
 
+  .catalog-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
   .header-chip-nav {
     order: 3;
     width: 100%;
@@ -2067,7 +2136,7 @@
   }
 
   .search-result-details {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .search-result-actions {
@@ -2208,6 +2277,7 @@
   }
 
   .search-result-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
 

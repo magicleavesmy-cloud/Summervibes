@@ -11,6 +11,13 @@ const discountRate = 0.1;
 const defaultProductImage =
   "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=80";
 const productsApiPath = "/api/products";
+const puffRanges = [
+  { label: "Below 1,000", max: 999, min: 0 },
+  { label: "1,000-5,000", max: 5000, min: 1000 },
+  { label: "6,000-10,000", max: 10000, min: 6000 },
+  { label: "11,000-20,000", max: 20000, min: 11000 },
+  { label: "21,000-40,000", max: 40000, min: 21000 },
+];
 
 function normalizeFlavours(flavours, defaultStock = 0) {
   if (!Array.isArray(flavours)) {
@@ -65,6 +72,20 @@ function getFirstInStockFlavour(product, fallbackFlavour) {
     product.flavours.find((flavour) => flavour.stock > 0)?.name ||
     fallbackFlavour
   );
+}
+
+function getPuffCount(product) {
+  const puffText =
+    product.puffs || (/puff/i.test(product.name) ? product.name : "");
+  const puffMatch = puffText.match(/[\d,]+/);
+
+  return puffMatch ? Number(puffMatch[0].replace(/,/g, "")) : 0;
+}
+
+function getPuffLabel(product) {
+  const puffCount = getPuffCount(product);
+
+  return product.puffs || (puffCount ? `${puffCount} Puffs` : "Not listed");
 }
 
 function getFallbackProducts() {
@@ -219,6 +240,8 @@ export default function App() {
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedPuffRange, setSelectedPuffRange] = useState("All");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [draggedProductId, setDraggedProductId] = useState(null);
   const [savingProductId, setSavingProductId] = useState(null);
@@ -335,6 +358,36 @@ export default function App() {
     () => storeProducts.filter((product) => product.isVisible !== false),
     [storeProducts],
   );
+  const storeCategories = useMemo(
+    () => [
+      "All",
+      ...new Set(
+        visibleProducts
+          .map((product) => product.category)
+          .filter(Boolean),
+      ),
+    ],
+    [visibleProducts],
+  );
+  const filteredVisibleProducts = useMemo(
+    () =>
+      visibleProducts.filter((product) => {
+        const matchesCategory =
+          selectedCategory === "All" || product.category === selectedCategory;
+        const puffRange = puffRanges.find(
+          (range) => range.label === selectedPuffRange,
+        );
+        const puffCount = getPuffCount(product);
+        const matchesPuffs =
+          !puffRange ||
+          (puffCount > 0 &&
+            puffCount >= puffRange.min &&
+            puffCount <= puffRange.max);
+
+        return matchesCategory && matchesPuffs;
+      }),
+    [selectedCategory, selectedPuffRange, visibleProducts],
+  );
 
   const cartTotal = useMemo(
     () =>
@@ -357,20 +410,21 @@ export default function App() {
   const adminSearchTerm = adminSearch.trim().toLowerCase();
   const visibleProductResults = useMemo(() => {
     if (!storeSearchTerm) {
-      return visibleProducts.map((product) => ({
+      return filteredVisibleProducts.map((product) => ({
         product,
         resultId: String(product.id),
         selectedFlavour: null,
       }));
     }
 
-    return visibleProducts.flatMap((product) => {
+    return filteredVisibleProducts.flatMap((product) => {
       const searchableProductDetails = [
         product.name,
         product.category,
         product.price,
         product.tag,
         product.puffs,
+        getPuffCount(product),
         product.description,
       ]
         .join(" ")
@@ -403,7 +457,7 @@ export default function App() {
 
       return [];
     });
-  }, [storeSearchTerm, visibleProducts]);
+  }, [filteredVisibleProducts, storeSearchTerm]);
   const adminStats = useMemo(() => {
     const totalStock = storeProducts.reduce(
       (total, product) => total + getTotalStock(product),
@@ -542,6 +596,8 @@ export default function App() {
 
   function goHome() {
     setStoreSearch("");
+    setSelectedCategory("All");
+    setSelectedPuffRange("All");
     closeCart();
     window.requestAnimationFrame(() => {
       scrollToStoreSection("home");
@@ -1381,10 +1437,57 @@ export default function App() {
             <p>
               {storeSearchTerm
                 ? `${visibleProductResults.length} results`
-                : `${visibleProducts.length} products available`}{" "}
+                : `${filteredVisibleProducts.length} products available`}{" "}
               {" - "}
               {cartCount} in cart
             </p>
+          </section>
+
+          <section className="catalog-filter-bar" aria-label="Product filters">
+            <div>
+              <span>Category</span>
+              <div className="filter-chip-row">
+                {storeCategories.map((category) => (
+                  <button
+                    aria-pressed={selectedCategory === category}
+                    className={
+                      selectedCategory === category ? "active" : ""
+                    }
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    type="button"
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span>Puffs</span>
+              <div className="filter-chip-row">
+                <button
+                  aria-pressed={selectedPuffRange === "All"}
+                  className={selectedPuffRange === "All" ? "active" : ""}
+                  onClick={() => setSelectedPuffRange("All")}
+                  type="button"
+                >
+                  All
+                </button>
+                {puffRanges.map((range) => (
+                  <button
+                    aria-pressed={selectedPuffRange === range.label}
+                    className={
+                      selectedPuffRange === range.label ? "active" : ""
+                    }
+                    key={range.label}
+                    onClick={() => setSelectedPuffRange(range.label)}
+                    type="button"
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </section>
 
           {storeSearchTerm ? (
@@ -1444,6 +1547,10 @@ export default function App() {
                       <span>
                         <small>Flavour</small>
                         <strong>{selectedFlavour}</strong>
+                      </span>
+                      <span>
+                        <small>Puffs</small>
+                        <strong>{getPuffLabel(product)}</strong>
                       </span>
                       <span>
                         <small>Price</small>
@@ -1639,6 +1746,11 @@ export default function App() {
                 </article>
               );
               })}
+              {visibleProductResults.length === 0 && (
+                <p className="catalog-empty">
+                  No products match these filters.
+                </p>
+              )}
             </section>
           )}
 
