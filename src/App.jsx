@@ -242,6 +242,8 @@ export default function App() {
   const [storeSearch, setStoreSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPuffRange, setSelectedPuffRange] = useState("All");
+  const [selectedAdminCategory, setSelectedAdminCategory] = useState("All");
+  const [selectedAdminPuffRange, setSelectedAdminPuffRange] = useState("All");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [draggedProductId, setDraggedProductId] = useState(null);
   const [savingProductId, setSavingProductId] = useState(null);
@@ -408,6 +410,21 @@ export default function App() {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const storeSearchTerm = storeSearch.trim().toLowerCase();
   const adminSearchTerm = adminSearch.trim().toLowerCase();
+  const adminCategories = useMemo(
+    () => [
+      "All",
+      ...new Set(
+        storeProducts
+          .map((product) => product.category)
+          .filter(Boolean),
+      ),
+    ],
+    [storeProducts],
+  );
+  const hasAdminFilters =
+    Boolean(adminSearchTerm) ||
+    selectedAdminCategory !== "All" ||
+    selectedAdminPuffRange !== "All";
   const visibleProductResults = useMemo(() => {
     if (!storeSearchTerm) {
       return filteredVisibleProducts.map((product) => ({
@@ -482,26 +499,51 @@ export default function App() {
       totalStock,
     };
   }, [storeProducts]);
-  const filteredAdminProducts = useMemo(() => {
-    if (!adminSearchTerm) {
-      return storeProducts;
-    }
+  const filteredAdminProducts = useMemo(
+    () =>
+      storeProducts.filter((product) => {
+        const matchesCategory =
+          selectedAdminCategory === "All" ||
+          product.category === selectedAdminCategory;
+        const puffRange = puffRanges.find(
+          (range) => range.label === selectedAdminPuffRange,
+        );
+        const puffCount = getPuffCount(product);
+        const matchesPuffs =
+          !puffRange ||
+          (puffCount > 0 &&
+            puffCount >= puffRange.min &&
+            puffCount <= puffRange.max);
 
-    return storeProducts.filter((product) => {
-      const searchableProduct = [
-        product.name,
-        product.category,
-        product.price,
-        product.tag,
-        product.puffs,
-        ...product.flavours.map((flavour) => flavour.name),
-      ]
-        .join(" ")
-        .toLowerCase();
+        if (!matchesCategory || !matchesPuffs) {
+          return false;
+        }
 
-      return searchableProduct.includes(adminSearchTerm);
-    });
-  }, [adminSearchTerm, storeProducts]);
+        if (!adminSearchTerm) {
+          return true;
+        }
+
+        const searchableProduct = [
+          product.name,
+          product.category,
+          product.price,
+          product.tag,
+          product.puffs,
+          getPuffCount(product),
+          ...product.flavours.map((flavour) => flavour.name),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return searchableProduct.includes(adminSearchTerm);
+      }),
+    [
+      adminSearchTerm,
+      selectedAdminCategory,
+      selectedAdminPuffRange,
+      storeProducts,
+    ],
+  );
   const selectedAdminProduct =
     (expandedProductId ? productById.get(expandedProductId) : null) ||
     filteredAdminProducts[0] ||
@@ -605,7 +647,7 @@ export default function App() {
   }
 
   function handleProductDragStart(event, productId) {
-    if (adminSearchTerm) {
+    if (hasAdminFilters) {
       event.preventDefault();
       return;
     }
@@ -616,7 +658,7 @@ export default function App() {
   }
 
   function handleProductDragOver(event) {
-    if (!adminSearchTerm && draggedProductId) {
+    if (!hasAdminFilters && draggedProductId) {
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
     }
@@ -625,7 +667,7 @@ export default function App() {
   function handleProductDrop(event, targetProductId) {
     event.preventDefault();
 
-    if (adminSearchTerm) {
+    if (hasAdminFilters) {
       return;
     }
 
@@ -1095,10 +1137,57 @@ export default function App() {
             </article>
           </section>
 
+          <section className="control-filter-bar" aria-label="Admin filters">
+            <div>
+              <span>Category</span>
+              <div className="filter-chip-row">
+                {adminCategories.map((category) => (
+                  <button
+                    aria-pressed={selectedAdminCategory === category}
+                    className={
+                      selectedAdminCategory === category ? "active" : ""
+                    }
+                    key={category}
+                    onClick={() => setSelectedAdminCategory(category)}
+                    type="button"
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span>Puffs</span>
+              <div className="filter-chip-row">
+                <button
+                  aria-pressed={selectedAdminPuffRange === "All"}
+                  className={selectedAdminPuffRange === "All" ? "active" : ""}
+                  onClick={() => setSelectedAdminPuffRange("All")}
+                  type="button"
+                >
+                  All
+                </button>
+                {puffRanges.map((range) => (
+                  <button
+                    aria-pressed={selectedAdminPuffRange === range.label}
+                    className={
+                      selectedAdminPuffRange === range.label ? "active" : ""
+                    }
+                    key={range.label}
+                    onClick={() => setSelectedAdminPuffRange(range.label)}
+                    type="button"
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
           <section className="control-toolbar" aria-label="Product search">
             <p>
-              {adminSearchTerm
-                ? "Clear search to reorder"
+              {hasAdminFilters
+                ? "Clear search and filters to reorder"
                 : "Drag rows to arrange"}{" "}
               {" - "} Showing {filteredAdminProducts.length} of{" "}
               {storeProducts.length}
@@ -1129,7 +1218,7 @@ export default function App() {
                     className={`control-row ${isSelected ? "selected" : ""} ${
                       draggedProductId === product.id ? "dragging" : ""
                     } ${isVisible ? "" : "hidden-product"}`}
-                    draggable={!adminSearchTerm}
+                    draggable={!hasAdminFilters}
                     onDragEnd={handleProductDragEnd}
                     onDragOver={handleProductDragOver}
                     onDragStart={(event) =>
@@ -1155,6 +1244,7 @@ export default function App() {
                           )}
                         </strong>
                         <small>
+                          {product.category} {" - "}
                           {product.flavours.length} flavours {" - "}{" "}
                           {product.price}
                         </small>
@@ -1227,6 +1317,20 @@ export default function App() {
                             )
                           }
                           value={selectedAdminProduct.name}
+                        />
+                      </label>
+                      <label>
+                        <span>Category</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "category",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Disposable Vape"
+                          value={selectedAdminProduct.category || ""}
                         />
                       </label>
                       <label>

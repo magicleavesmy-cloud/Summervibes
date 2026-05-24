@@ -281,7 +281,8 @@
   text-align: center;
 }
 
-.catalog-filter-bar {
+.catalog-filter-bar,
+.control-filter-bar {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
   gap: 14px;
@@ -292,13 +293,15 @@
   padding: 10px;
 }
 
-.catalog-filter-bar > div {
+.catalog-filter-bar > div,
+.control-filter-bar > div {
   display: grid;
   min-width: 0;
   gap: 7px;
 }
 
-.catalog-filter-bar > div > span {
+.catalog-filter-bar > div > span,
+.control-filter-bar > div > span {
   color: #b77761;
   font-size: 10px;
   font-weight: 900;
@@ -1728,6 +1731,7 @@
 .control-toolbar label span,
 .catalog-search span,
 .catalog-filter-bar > div > span,
+.control-filter-bar > div > span,
 .drag-handle,
 .control-card-summary em {
   color: #777777;
@@ -1896,6 +1900,7 @@
 :root[data-theme="dark"] .product-card,
 :root[data-theme="dark"] .search-result-item,
 :root[data-theme="dark"] .catalog-filter-bar,
+:root[data-theme="dark"] .control-filter-bar,
 :root[data-theme="dark"] .product-detail,
 :root[data-theme="dark"] .admin-login form,
 :root[data-theme="dark"] .control-header,
@@ -1956,6 +1961,7 @@
 :root[data-theme="dark"] .control-overview span,
 :root[data-theme="dark"] .catalog-search span,
 :root[data-theme="dark"] .catalog-filter-bar > div > span,
+:root[data-theme="dark"] .control-filter-bar > div > span,
 :root[data-theme="dark"] .control-header-search span,
 :root[data-theme="dark"] .drag-handle,
 :root[data-theme="dark"] .control-card-summary em {
@@ -2093,7 +2099,8 @@
     width: 100%;
   }
 
-  .catalog-filter-bar {
+  .catalog-filter-bar,
+  .control-filter-bar {
     grid-template-columns: 1fr;
   }
 
