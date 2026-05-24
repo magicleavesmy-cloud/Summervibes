@@ -830,12 +830,12 @@
 
 .control-page {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-store {
-  width: min(1180px, calc(100% - 24px));
-  padding: 16px;
+  width: min(1120px, calc(100% - 20px));
+  padding: 12px;
 }
 
 .admin-store .store-nav {
@@ -877,7 +877,7 @@
 .control-row label,
 .control-editor-panel label {
   display: grid;
-  gap: 7px;
+  gap: 5px;
 }
 
 .admin-login label span,
@@ -895,13 +895,14 @@
 .control-row input,
 .control-editor-panel input {
   width: 100%;
-  min-height: 34px;
+  min-height: 30px;
   border: 1px solid rgba(176, 119, 97, 0.22);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fffaf2;
   color: #4d302e;
+  font-size: 12px;
   font-weight: 800;
-  padding: 7px 10px;
+  padding: 5px 8px;
 }
 
 .admin-login button {
@@ -912,9 +913,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 14px 16px;
-  border-radius: 18px;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background:
     linear-gradient(135deg, rgba(255, 252, 246, 0.92), rgba(255, 238, 222, 0.86)),
     #fffaf2;
@@ -923,13 +924,13 @@
 .control-header-actions {
   display: grid;
   justify-items: end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .control-header-actions p {
   max-width: 390px;
   color: #8a716c;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   text-align: right;
 }
@@ -979,23 +980,24 @@
   background: #fffaf2;
   color: #59332f;
   cursor: pointer;
+  font-size: 12px;
   font-weight: 900;
-  padding: 7px 11px;
+  padding: 5px 9px;
 }
 
 .control-overview {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .control-overview article {
   display: grid;
-  gap: 5px;
+  gap: 3px;
   min-width: 0;
-  padding: 10px 12px;
+  padding: 7px 9px;
   border: 1px solid rgba(255, 255, 255, 0.86);
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(255, 252, 246, 0.84);
   box-shadow: 0 10px 22px rgba(113, 74, 58, 0.08);
 }
@@ -1012,7 +1014,7 @@
 .control-overview strong {
   overflow: hidden;
   color: #351c28;
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1020,12 +1022,12 @@
 
 .control-toolbar {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto;
+  grid-template-columns: minmax(220px, 1fr) auto;
   align-items: end;
-  gap: 10px;
-  padding: 10px;
+  gap: 8px;
+  padding: 8px;
   border: 1px solid rgba(255, 255, 255, 0.86);
-  border-radius: 16px;
+  border-radius: 12px;
   background: rgba(255, 252, 246, 0.82);
   box-shadow: 0 10px 22px rgba(113, 74, 58, 0.07);
 }
@@ -1037,13 +1039,14 @@
 
 .control-toolbar input {
   width: 100%;
-  min-height: 34px;
+  min-height: 30px;
   border: 1px solid rgba(176, 119, 97, 0.22);
   border-radius: 999px;
   background: #fffaf2;
   color: #4d302e;
+  font-size: 12px;
   font-weight: 800;
-  padding: 7px 13px;
+  padding: 5px 10px;
 }
 
 .control-toolbar input:focus {
@@ -1061,19 +1064,19 @@
 .control-list {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
 }
 
 .control-workspace {
   display: grid;
-  grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.64fr);
+  grid-template-columns: minmax(230px, 0.62fr) minmax(0, 1.38fr);
   align-items: start;
-  gap: 10px;
+  gap: 8px;
 }
 
 .control-row {
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 10px;
   transition:
     opacity 180ms ease,
     box-shadow 180ms ease,
@@ -1109,60 +1112,60 @@
 
 .control-card-summary {
   display: grid;
-  grid-template-columns: 22px 44px minmax(0, 1fr) auto;
+  grid-template-columns: 14px 34px minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
-  gap: 8px;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 6px 8px;
   text-align: left;
 }
 
 .drag-handle {
   color: #b77761;
   cursor: grab;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: -0.08em;
   line-height: 1;
 }
 
 .control-card-summary img {
-  width: 44px;
+  width: 34px;
   aspect-ratio: 1;
-  border-radius: 10px;
+  border-radius: 8px;
   object-fit: cover;
 }
 
 .control-card-summary span {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 .control-card-summary span strong {
   overflow: hidden;
   color: #351c28;
-  font-size: 13px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .control-card-summary small {
   color: #987b75;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
 
 .control-card-summary > strong,
 .control-row > strong {
   justify-self: start;
-  padding: 5px 8px;
+  padding: 4px 6px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   white-space: nowrap;
 }
 
@@ -1181,24 +1184,24 @@
 
 .control-editor-panel {
   position: sticky;
-  top: 12px;
+  top: 10px;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .control-editor-header {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr);
+  grid-template-columns: 46px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  padding: 9px;
   border-bottom: 1px solid rgba(176, 119, 97, 0.12);
 }
 
 .control-editor-header img {
-  width: 62px;
+  width: 46px;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: 9px;
   object-fit: cover;
 }
 
@@ -1206,7 +1209,7 @@
   overflow: hidden;
   margin: 0;
   color: #351c28;
-  font-size: 20px;
+  font-size: 16px;
   letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1214,34 +1217,34 @@
 
 .control-editor-header span {
   color: #987b75;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .control-card-editor {
   display: grid;
-  grid-template-columns: minmax(240px, 0.78fr) minmax(300px, 1.22fr);
-  gap: 10px;
-  padding: 10px;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(240px, 1.28fr);
+  gap: 8px;
+  padding: 8px;
 }
 
 .product-edit-fields {
   display: grid;
   align-content: start;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border: 1px solid rgba(176, 119, 97, 0.12);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 250, 242, 0.72);
 }
 
 .flavour-control {
   display: grid;
   align-content: start;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border: 1px solid rgba(176, 119, 97, 0.12);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 250, 242, 0.72);
 }
 
@@ -1249,23 +1252,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .flavour-inventory {
   display: grid;
-  gap: 6px;
+  gap: 5px;
 }
 
 .flavour-line {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) 72px 94px auto;
-  gap: 6px;
+  grid-template-columns: minmax(110px, 1fr) 54px 74px auto;
+  gap: 4px;
 }
 
 .visibility-toggle {
   display: grid;
-  gap: 5px;
+  gap: 4px;
 }
 
 .visibility-toggle button {
@@ -1275,8 +1278,9 @@
   background: rgba(79, 143, 103, 0.14);
   color: #315f44;
   cursor: pointer;
+  font-size: 12px;
   font-weight: 900;
-  padding: 7px 11px;
+  padding: 5px 9px;
 }
 
 .visibility-toggle button.hidden {
@@ -1286,7 +1290,7 @@
 }
 
 .add-flavour {
-  padding: 7px 11px;
+  padding: 5px 9px;
 }
 
 .product-update-actions {
@@ -1750,7 +1754,7 @@
   }
 
   .flavour-line {
-    grid-template-columns: minmax(0, 1fr) 70px 90px auto;
+    grid-template-columns: minmax(0, 1fr) 56px 76px auto;
   }
 }
 
@@ -1788,7 +1792,7 @@
   }
 
   .admin-store {
-    padding: 12px 10px 68px;
+    padding: 10px 8px 68px;
   }
 
   .admin-store .store-nav {
@@ -1940,32 +1944,32 @@
   }
 
   .control-overview article {
-    padding: 10px;
+    padding: 7px 8px;
   }
 
   .control-overview strong {
-    font-size: 22px;
+    font-size: 18px;
   }
 
   .control-toolbar {
-    padding: 9px;
+    padding: 7px;
   }
 
   .control-header {
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    padding: 9px;
   }
 
   .control-header h1 {
-    font-size: 23px;
+    font-size: 20px;
   }
 
   .control-card-summary {
-    grid-template-columns: 18px 42px minmax(0, 1fr) auto;
+    grid-template-columns: 14px 34px minmax(0, 1fr) auto;
   }
 
   .control-card-summary img {
-    width: 42px;
+    width: 34px;
   }
 
   .control-card-summary em {
