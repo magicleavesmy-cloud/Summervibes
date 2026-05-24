@@ -1349,12 +1349,112 @@ export default function App() {
             </p>
           </section>
 
-          <section className="product-grid">
-            {visibleProductResults.map(({
-              product,
-              resultId,
-              selectedFlavour: resultFlavour,
-            }) => {
+          {storeSearchTerm ? (
+            <section className="search-results-list" aria-label="Search results">
+              {visibleProductResults.map(({
+                product,
+                resultId,
+                selectedFlavour: resultFlavour,
+              }) => {
+                const selectedFlavour =
+                  resultFlavour ||
+                  getFirstInStockFlavour(product, getFlavourNames(product)[0]);
+                const cartQuantity = cart
+                  .filter(
+                    (item) =>
+                      item.id === product.id &&
+                      item.selectedFlavour === selectedFlavour,
+                  )
+                  .reduce((total, item) => total + item.quantity, 0);
+                const flavourStock = getFlavourStock(product, selectedFlavour);
+                const selectedPrice = getFlavourPrice(product, selectedFlavour);
+                const remainingStock = Math.max(flavourStock - cartQuantity, 0);
+                const isSoldOut = remainingStock <= 0;
+
+                return (
+                  <article className="search-result-item" key={resultId}>
+                    <button
+                      className="search-result-main"
+                      onClick={() => {
+                        setSelectedFlavours((currentFlavours) => ({
+                          ...currentFlavours,
+                          [product.id]: selectedFlavour,
+                        }));
+                        openProductDetail(product.id);
+                      }}
+                      type="button"
+                    >
+                      <span className="search-result-image">
+                        <img src={product.image} alt="" />
+                      </span>
+                      <span className="search-result-copy">
+                        <span className="category">{product.category}</span>
+                        <strong>
+                          {product.name}
+                          {product.puffs && (
+                            <em className="puff-chip">{product.puffs}</em>
+                          )}
+                        </strong>
+                        <span className="search-result-description">
+                          {product.description ||
+                            "Choose a flavour and add this product to your cart."}
+                        </span>
+                      </span>
+                    </button>
+
+                    <div className="search-result-details">
+                      <span>
+                        <small>Flavour</small>
+                        <strong>{selectedFlavour}</strong>
+                      </span>
+                      <span>
+                        <small>Price</small>
+                        <strong>{selectedPrice}</strong>
+                      </span>
+                      <span>
+                        <small>Stock</small>
+                        <strong>
+                          {isSoldOut ? "Sold out" : `${remainingStock} left`}
+                        </strong>
+                      </span>
+                    </div>
+
+                    <div className="search-result-actions">
+                      <button
+                        onClick={() => {
+                          setSelectedFlavours((currentFlavours) => ({
+                            ...currentFlavours,
+                            [product.id]: selectedFlavour,
+                          }));
+                          openProductDetail(product.id);
+                        }}
+                        type="button"
+                      >
+                        Details
+                      </button>
+                      <button
+                        className="cart-button"
+                        disabled={isSoldOut}
+                        onClick={() => addToCart(product, selectedFlavour)}
+                        type="button"
+                      >
+                        {isSoldOut ? "Sold Out" : "Add"}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+              {visibleProductResults.length === 0 && (
+                <p className="catalog-empty">No products match this search.</p>
+              )}
+            </section>
+          ) : (
+            <section className="product-grid">
+              {visibleProductResults.map(({
+                product,
+                resultId,
+                selectedFlavour: resultFlavour,
+              }) => {
               const availableFlavours = getFlavourNames(product);
               const isSearchResult = Boolean(storeSearchTerm && resultFlavour);
               const preferredFlavour = resultFlavour
@@ -1500,11 +1600,9 @@ export default function App() {
                   </button>
                 </article>
               );
-            })}
-            {visibleProductResults.length === 0 && (
-              <p className="catalog-empty">No products match this search.</p>
-            )}
-          </section>
+              })}
+            </section>
+          )}
 
           <button
             aria-label={`Open cart with ${cartCount} items`}
