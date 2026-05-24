@@ -218,6 +218,7 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
+  const [storeSearch, setStoreSearch] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [draggedProductId, setDraggedProductId] = useState(null);
   const [savingProductId, setSavingProductId] = useState(null);
@@ -352,7 +353,28 @@ export default function App() {
   const cartFinalTotal = Math.max(cartTotal - cartDiscount, 0);
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const storeSearchTerm = storeSearch.trim().toLowerCase();
   const adminSearchTerm = adminSearch.trim().toLowerCase();
+  const filteredVisibleProducts = useMemo(() => {
+    if (!storeSearchTerm) {
+      return visibleProducts;
+    }
+
+    return visibleProducts.filter((product) => {
+      const searchableProduct = [
+        product.name,
+        product.category,
+        product.price,
+        product.tag,
+        product.puffs,
+        ...product.flavours.map((flavour) => flavour.name),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchableProduct.includes(storeSearchTerm);
+    });
+  }, [storeSearchTerm, visibleProducts]);
   const adminStats = useMemo(() => {
     const totalStock = storeProducts.reduce(
       (total, product) => total + getTotalStock(product),
@@ -1291,14 +1313,26 @@ export default function App() {
               <p className="eyebrow">Featured products</p>
               <h2>Popular right now</h2>
             </div>
+            <label className="catalog-search">
+              <span>Search products</span>
+              <input
+                onChange={(event) => setStoreSearch(event.target.value)}
+                placeholder="Brand, Flavour, Puffs"
+                type="search"
+                value={storeSearch}
+              />
+            </label>
             <p>
-              {visibleProducts.length} products available {" - "}
+              {storeSearchTerm
+                ? `${filteredVisibleProducts.length} of ${visibleProducts.length}`
+                : visibleProducts.length}{" "}
+              products available {" - "}
               {cartCount} in cart
             </p>
           </section>
 
           <section className="product-grid">
-            {visibleProducts.map((product) => {
+            {filteredVisibleProducts.map((product) => {
               const availableFlavours = getFlavourNames(product);
               const preferredFlavour = availableFlavours.includes(
                 selectedFlavours[product.id],
@@ -1411,6 +1445,9 @@ export default function App() {
                 </article>
               );
             })}
+            {filteredVisibleProducts.length === 0 && (
+              <p className="catalog-empty">No products match this search.</p>
+            )}
           </section>
 
           <button

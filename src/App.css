@@ -204,6 +204,46 @@
   font-weight: 700;
 }
 
+.catalog-search {
+  display: grid;
+  width: min(360px, 100%);
+  gap: 5px;
+}
+
+.catalog-search span {
+  color: #b77761;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalog-search input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(176, 119, 97, 0.22);
+  border-radius: 999px;
+  background: #fffaf2;
+  color: #4d302e;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 14px;
+}
+
+.catalog-search input:focus {
+  border-color: #f58a84;
+  outline: 3px solid rgba(245, 138, 132, 0.18);
+}
+
+.catalog-empty {
+  grid-column: 1 / -1;
+  margin: 10px 0;
+  color: #777777;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .empty-cart {
   color: #9a827c;
   font-size: 14px;
@@ -1433,6 +1473,7 @@
 .flavour-control-header span,
 .control-overview span,
 .control-toolbar label span,
+.catalog-search span,
 .drag-handle,
 .control-card-summary em {
   color: #777777;
@@ -1454,6 +1495,7 @@
 }
 
 .catalog-header > p,
+.catalog-empty,
 .empty-cart,
 .cart-item span,
 .floating-cart small,
@@ -1633,6 +1675,7 @@
 :root[data-theme="dark"] .category,
 :root[data-theme="dark"] .detail-hint,
 :root[data-theme="dark"] .catalog-header > p,
+:root[data-theme="dark"] .catalog-empty,
 :root[data-theme="dark"] .empty-cart,
 :root[data-theme="dark"] .cart-item span,
 :root[data-theme="dark"] .detail-description,
@@ -1646,6 +1689,7 @@
 :root[data-theme="dark"] .control-row label span,
 :root[data-theme="dark"] .flavour-control-header span,
 :root[data-theme="dark"] .control-overview span,
+:root[data-theme="dark"] .catalog-search span,
 :root[data-theme="dark"] .control-header-search span,
 :root[data-theme="dark"] .drag-handle,
 :root[data-theme="dark"] .control-card-summary em {
@@ -1685,6 +1729,7 @@
 }
 
 :root[data-theme="dark"] .flavour-trigger,
+:root[data-theme="dark"] .catalog-search input,
 :root[data-theme="dark"] .admin-login input,
 :root[data-theme="dark"] .control-row input,
 :root[data-theme="dark"] .control-editor-panel input,
@@ -1746,6 +1791,10 @@
   .catalog-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .catalog-search {
+    width: 100%;
   }
 
   .control-header {
