@@ -38,10 +38,10 @@
   align-items: center;
   gap: 6px;
   padding: 5px;
-  border: 1px solid rgba(99, 49, 59, 0.08);
+  border: 1px solid #111111;
   border-radius: 999px;
-  background: rgba(255, 251, 242, 0.8);
-  box-shadow: 0 12px 28px rgba(105, 58, 48, 0.08);
+  background: #111111;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
 }
 
 .header-chip-nav button {
@@ -49,8 +49,8 @@
   height: 34px;
   border: 0;
   border-radius: 999px;
-  background: transparent;
-  color: #7f6260;
+  background: #111111;
+  color: #ffffff;
   cursor: pointer;
   font-size: 12px;
   font-weight: 900;
@@ -63,8 +63,8 @@
 
 .header-chip-nav button:hover,
 .header-chip-nav button:focus-visible {
-  background: #171717;
-  color: #ffffff;
+  background: #ffffff;
+  color: #111111;
   outline: 0;
   transform: translateY(-1px);
 }
@@ -1837,7 +1837,6 @@
 }
 
 :root[data-theme="dark"] .store-nav-actions,
-:root[data-theme="dark"] .header-chip-nav,
 :root[data-theme="dark"] .cart-item,
 :root[data-theme="dark"] .cart-popover,
 :root[data-theme="dark"] .product-card,
@@ -1908,7 +1907,6 @@
 }
 
 :root[data-theme="dark"] .theme-toggle,
-:root[data-theme="dark"] .header-chip-nav button,
 :root[data-theme="dark"] .quantity-controls button,
 :root[data-theme="dark"] .clear-button,
 :root[data-theme="dark"] .search-result-actions button,
@@ -1921,6 +1919,17 @@
   border-color: rgba(255, 255, 255, 0.1);
   background: #2b2b2b;
   color: #f3f3f3;
+}
+
+:root[data-theme="dark"] .header-chip-nav {
+  border-color: #111111;
+  background: #111111;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+}
+
+:root[data-theme="dark"] .header-chip-nav button {
+  background: #111111;
+  color: #ffffff;
 }
 
 :root[data-theme="dark"] .header-chip-nav button:hover,
