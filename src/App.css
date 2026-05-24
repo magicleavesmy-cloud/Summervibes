@@ -928,15 +928,45 @@
 }
 
 .control-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
   border-radius: 14px;
   background:
     linear-gradient(135deg, rgba(255, 252, 246, 0.92), rgba(255, 238, 222, 0.86)),
     #fffaf2;
+}
+
+.control-header-search {
+  display: grid;
+  gap: 4px;
+}
+
+.control-header-search span {
+  color: #b77761;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.control-header-search input {
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid rgba(176, 119, 97, 0.22);
+  border-radius: 999px;
+  background: #fffaf2;
+  color: #4d302e;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 10px;
+}
+
+.control-header-search input:focus {
+  border-color: #f58a84;
+  outline: 3px solid rgba(245, 138, 132, 0.18);
 }
 
 .control-header-actions {
@@ -1021,7 +1051,7 @@
 }
 
 .control-overview span,
-.control-toolbar label span {
+.control-header-search span {
   color: #b77761;
   font-size: 10px;
   font-weight: 900;
@@ -1040,36 +1070,8 @@
 
 .control-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto;
-  align-items: end;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  border-radius: 12px;
-  background: rgba(255, 252, 246, 0.82);
-  box-shadow: 0 10px 22px rgba(113, 74, 58, 0.07);
-}
-
-.control-toolbar label {
-  display: grid;
-  gap: 5px;
-}
-
-.control-toolbar input {
-  width: 100%;
-  min-height: 30px;
-  border: 1px solid rgba(176, 119, 97, 0.22);
-  border-radius: 999px;
-  background: #fffaf2;
-  color: #4d302e;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 5px 10px;
-}
-
-.control-toolbar input:focus {
-  border-color: #f58a84;
-  outline: 3px solid rgba(245, 138, 132, 0.18);
+  justify-items: end;
+  padding: 0 2px;
 }
 
 .control-toolbar p {
@@ -1644,7 +1646,7 @@
 :root[data-theme="dark"] .control-row label span,
 :root[data-theme="dark"] .flavour-control-header span,
 :root[data-theme="dark"] .control-overview span,
-:root[data-theme="dark"] .control-toolbar label span,
+:root[data-theme="dark"] .control-header-search span,
 :root[data-theme="dark"] .drag-handle,
 :root[data-theme="dark"] .control-card-summary em {
   color: #b7b7b7;
@@ -1686,7 +1688,7 @@
 :root[data-theme="dark"] .admin-login input,
 :root[data-theme="dark"] .control-row input,
 :root[data-theme="dark"] .control-editor-panel input,
-:root[data-theme="dark"] .control-toolbar input {
+:root[data-theme="dark"] .control-header-search input {
   border-color: rgba(255, 255, 255, 0.12);
   background: #151515;
   color: #f3f3f3;
@@ -1741,10 +1743,13 @@
     padding: 14px;
   }
 
-  .catalog-header,
-  .control-header {
+  .catalog-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .control-header {
+    grid-template-columns: 1fr;
   }
 
   .catalog-header {
@@ -1767,10 +1772,6 @@
 
   .control-overview {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .control-toolbar {
-    grid-template-columns: 1fr;
   }
 
   .control-workspace {
@@ -1993,10 +1994,6 @@
 
   .control-overview strong {
     font-size: 18px;
-  }
-
-  .control-toolbar {
-    padding: 7px;
   }
 
   .control-header {

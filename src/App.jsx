@@ -902,6 +902,15 @@ export default function App() {
               <p className="eyebrow">Inventory workspace</p>
               <h1>Product control</h1>
             </div>
+            <label className="control-header-search">
+              <span>Search inventory</span>
+              <input
+                onChange={(event) => setAdminSearch(event.target.value)}
+                placeholder="Brand, Flavour, Puffs"
+                type="search"
+                value={adminSearch}
+              />
+            </label>
             <div className="control-header-actions">
               <p className={`sync-status ${remoteSyncStatus}`}>
                 {remoteSyncStatus === "ready"
@@ -957,15 +966,6 @@ export default function App() {
           </section>
 
           <section className="control-toolbar" aria-label="Product search">
-            <label>
-              <span>Search inventory</span>
-              <input
-                onChange={(event) => setAdminSearch(event.target.value)}
-                placeholder="Search product, flavour, tag..."
-                type="search"
-                value={adminSearch}
-              />
-            </label>
             <p>
               {adminSearchTerm
                 ? "Clear search to reorder"
