@@ -561,10 +561,11 @@
   align-items: center;
   max-width: 100%;
   margin-left: 6px;
-  padding: 2px 6px;
+  padding: 2px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 999px;
-  background: rgba(79, 143, 103, 0.14);
-  color: #315f44;
+  background: #ffffff;
+  color: #111111;
   font-size: 10px;
   font-style: normal;
   font-weight: 900;
@@ -721,10 +722,10 @@
   z-index: 2;
   width: 34px;
   height: 34px;
-  border: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 999px;
-  background: rgba(255, 250, 242, 0.92);
-  color: #6f1d38;
+  background: #ffffff;
+  color: #111111;
   cursor: pointer;
   font-weight: 900;
   box-shadow: 0 10px 22px rgba(113, 74, 58, 0.16);
@@ -1173,8 +1174,9 @@
 
 .control-card-summary .puff-chip {
   max-width: 88px;
-  background: rgba(79, 143, 103, 0.14);
-  color: #315f44;
+  border-color: rgba(0, 0, 0, 0.16);
+  background: #ffffff;
+  color: #111111;
   font-size: 10px;
   font-style: normal;
 }
@@ -1246,8 +1248,9 @@
 
 :root[data-theme="dark"] .puff-chip,
 :root[data-theme="dark"] .control-card-summary .puff-chip {
-  background: rgba(79, 143, 103, 0.22);
-  color: #d7f2df;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: #ffffff;
+  color: #111111;
 }
 
 .control-editor-header span {
@@ -1659,6 +1662,12 @@
   border-color: rgba(255, 255, 255, 0.1);
   background: #2b2b2b;
   color: #f3f3f3;
+}
+
+:root[data-theme="dark"] .detail-close {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: #ffffff;
+  color: #111111;
 }
 
 :root[data-theme="dark"] .whatsapp-link,
