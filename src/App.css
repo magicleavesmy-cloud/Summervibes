@@ -20,6 +20,7 @@
 .store-nav {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 24px;
@@ -30,6 +31,42 @@
   width: clamp(82px, 14vw, 132px);
   height: auto;
   object-fit: contain;
+}
+
+.header-chip-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(99, 49, 59, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 251, 242, 0.8);
+  box-shadow: 0 12px 28px rgba(105, 58, 48, 0.08);
+}
+
+.header-chip-nav button {
+  min-width: 68px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #7f6260;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 14px;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.header-chip-nav button:hover,
+.header-chip-nav button:focus-visible {
+  background: #171717;
+  color: #ffffff;
+  outline: 0;
+  transform: translateY(-1px);
 }
 
 .store-nav-actions {
@@ -1800,6 +1837,7 @@
 }
 
 :root[data-theme="dark"] .store-nav-actions,
+:root[data-theme="dark"] .header-chip-nav,
 :root[data-theme="dark"] .cart-item,
 :root[data-theme="dark"] .cart-popover,
 :root[data-theme="dark"] .product-card,
@@ -1870,6 +1908,7 @@
 }
 
 :root[data-theme="dark"] .theme-toggle,
+:root[data-theme="dark"] .header-chip-nav button,
 :root[data-theme="dark"] .quantity-controls button,
 :root[data-theme="dark"] .clear-button,
 :root[data-theme="dark"] .search-result-actions button,
@@ -1882,6 +1921,12 @@
   border-color: rgba(255, 255, 255, 0.1);
   background: #2b2b2b;
   color: #f3f3f3;
+}
+
+:root[data-theme="dark"] .header-chip-nav button:hover,
+:root[data-theme="dark"] .header-chip-nav button:focus-visible {
+  background: #f3f3f3;
+  color: #111111;
 }
 
 :root[data-theme="dark"] .detail-close {
@@ -1972,6 +2017,17 @@
 
   .catalog-search {
     width: 100%;
+  }
+
+  .header-chip-nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-chip-nav button {
+    min-width: 0;
+    flex: 1;
   }
 
   .control-header {

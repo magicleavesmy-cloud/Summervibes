@@ -533,6 +533,13 @@ export default function App() {
     setIsCartOpen(false);
   }
 
+  function scrollToStoreSection(sectionId) {
+    document.getElementById(sectionId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+
   function handleProductDragStart(event, productId) {
     if (adminSearchTerm) {
       event.preventDefault();
@@ -861,6 +868,25 @@ export default function App() {
           src="/summer-vibes-logo.png"
           alt="Summer Vibes"
         />
+        {!isAdminRoute && (
+          <div className="header-chip-nav" aria-label="Customer shortcuts">
+            <button
+              onClick={() => scrollToStoreSection("home")}
+              type="button"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => scrollToStoreSection("shop")}
+              type="button"
+            >
+              Shop
+            </button>
+            <button onClick={openCart} type="button">
+              Cart
+            </button>
+          </div>
+        )}
         <div className="store-nav-actions">
           <button
             aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
@@ -1309,7 +1335,11 @@ export default function App() {
         )
       ) : (
         <>
-          <section className="store-hero" aria-label="Featured promotion">
+          <section
+            className="store-hero"
+            id="home"
+            aria-label="Featured promotion"
+          >
             <div className="hero-image-track" aria-hidden="true">
               <img
                 src="https://vapehaus.com.my/cdn/shop/files/space_bar_poster_3.jpg?v=1778158986&width=1445"
@@ -1326,7 +1356,7 @@ export default function App() {
             </div>
           </section>
 
-          <section className="catalog-header">
+          <section className="catalog-header" id="shop">
             <div>
               <p className="eyebrow">Featured products</p>
               <h2>Popular right now</h2>
