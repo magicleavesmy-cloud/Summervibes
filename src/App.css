@@ -1086,6 +1086,10 @@
   box-shadow: 0 18px 42px rgba(111, 29, 56, 0.18);
 }
 
+.control-row.hidden-product {
+  opacity: 0.72;
+}
+
 .control-card-summary {
   display: grid;
   grid-template-columns: 22px 44px minmax(0, 1fr) auto auto;
@@ -1153,6 +1157,11 @@
   font-weight: 900;
 }
 
+.hidden-stock {
+  background: rgba(119, 119, 119, 0.12);
+  color: #666666;
+}
+
 .control-card-editor {
   display: grid;
   grid-template-columns: minmax(240px, 0.78fr) minmax(300px, 1.22fr);
@@ -1196,6 +1205,28 @@
   display: grid;
   grid-template-columns: minmax(160px, 1fr) 72px 94px auto;
   gap: 6px;
+}
+
+.visibility-toggle {
+  display: grid;
+  gap: 5px;
+}
+
+.visibility-toggle button {
+  justify-self: start;
+  border: 1px solid rgba(79, 143, 103, 0.18);
+  border-radius: 999px;
+  background: rgba(79, 143, 103, 0.14);
+  color: #315f44;
+  cursor: pointer;
+  font-weight: 900;
+  padding: 7px 11px;
+}
+
+.visibility-toggle button.hidden {
+  border-color: rgba(111, 29, 56, 0.16);
+  background: rgba(111, 29, 56, 0.12);
+  color: #6f1d38;
 }
 
 .add-flavour {

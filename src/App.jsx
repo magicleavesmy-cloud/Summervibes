@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { products } from "./products";
 
@@ -84,6 +84,7 @@ function serializeProducts(productList) {
     tag,
     description,
     image,
+    isVisible,
     flavours,
   }) => ({
     id,
@@ -94,6 +95,7 @@ function serializeProducts(productList) {
     tag,
     description,
     image,
+    isVisible: isVisible !== false,
     flavours,
   }));
 }
@@ -121,6 +123,7 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
           tag: savedProduct.tag ?? product.tag,
           description: savedProduct.description ?? product.description,
           image: savedProduct.image ?? product.image,
+          isVisible: savedProduct.isVisible !== false,
           flavours: normalizeFlavours(
             savedProduct.flavours,
             savedProduct.stock ?? product.stock,
@@ -137,6 +140,7 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
             savedProduct.description ??
             "Choose a flavour and add this product to your cart.",
           image: savedProduct.image ?? defaultProductImage,
+          isVisible: savedProduct.isVisible !== false,
           flavours: normalizeFlavours(savedProduct.flavours),
         };
   });
@@ -215,6 +219,8 @@ export default function App() {
   const [savingProductId, setSavingProductId] = useState(null);
   const [productUpdateStatus, setProductUpdateStatus] = useState({});
   const [sharedUpdateStatus, setSharedUpdateStatus] = useState("");
+  const [pendingSave, setPendingSave] = useState(null);
+  const latestStoreProducts = useRef(storeProducts);
   const [theme, setTheme] = useState(
     () => window.localStorage.getItem(themeStorageKey) || "light",
   );
@@ -275,6 +281,25 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    latestStoreProducts.current = storeProducts;
+  }, [storeProducts]);
+
+  useEffect(() => {
+    if (!isAdminRoute || !isAdminUnlocked || !pendingSave) {
+      return;
+    }
+
+    const autosaveTimer = window.setTimeout(() => {
+      updateSharedProducts(pendingSave.productId, true);
+      setPendingSave(null);
+    }, 900);
+
+    return () => {
+      window.clearTimeout(autosaveTimer);
+    };
+  }, [isAdminRoute, isAdminUnlocked, pendingSave, storeProducts]);
+
+  useEffect(() => {
     function closeDetailWithEscape(event) {
       if (event.key === "Escape") {
         closeProductDetail();
@@ -301,6 +326,10 @@ export default function App() {
   const selectedProduct = selectedProductId
     ? productById.get(selectedProductId)
     : null;
+  const visibleProducts = useMemo(
+    () => storeProducts.filter((product) => product.isVisible !== false),
+    [storeProducts],
+  );
 
   const cartTotal = useMemo(
     () =>
@@ -504,12 +533,27 @@ export default function App() {
       nextProducts.splice(targetIndex, 0, movedProduct);
       return nextProducts;
     });
+    markProductsChanged();
 
     setDraggedProductId(null);
   }
 
   function handleProductDragEnd() {
     setDraggedProductId(null);
+  }
+
+  function markProductsChanged(productId = null) {
+    setPendingSave({ productId, version: Date.now() });
+    setSharedUpdateStatus("");
+
+    if (productId !== null) {
+      setProductUpdateStatus((currentStatus) => ({
+        ...currentStatus,
+        [productId]: "Autosaving...",
+      }));
+    } else {
+      setSharedUpdateStatus("Autosaving...");
+    }
   }
 
   function updateProduct(productId, field, value) {
@@ -523,6 +567,7 @@ export default function App() {
       [productId]: "",
     }));
     setSharedUpdateStatus("");
+    markProductsChanged(productId);
   }
 
   function clearProductUpdateStatus(productId) {
@@ -533,8 +578,9 @@ export default function App() {
     setSharedUpdateStatus("");
   }
 
-  async function updateSharedProducts(productId = null) {
+  async function updateSharedProducts(productId = null, isAutoSave = false) {
     const isProductSave = productId !== null;
+    const productsToSave = latestStoreProducts.current;
 
     setSavingProductId(isProductSave ? productId : "all");
     setRemoteSyncStatus("saving");
@@ -542,15 +588,15 @@ export default function App() {
     if (isProductSave) {
       setProductUpdateStatus((currentStatus) => ({
         ...currentStatus,
-        [productId]: "Updating...",
+        [productId]: isAutoSave ? "Autosaving..." : "Updating...",
       }));
     } else {
-      setSharedUpdateStatus("Updating...");
+      setSharedUpdateStatus(isAutoSave ? "Autosaving..." : "Updating...");
     }
 
     try {
       const response = await fetch(productsApiPath, {
-        body: JSON.stringify({ products: serializeProducts(storeProducts) }),
+        body: JSON.stringify({ products: serializeProducts(productsToSave) }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
@@ -606,6 +652,7 @@ export default function App() {
 
     setStoreProducts((currentProducts) => [...currentProducts, nextProduct]);
     setExpandedProductId(nextProduct.id);
+    markProductsChanged(nextProduct.id);
   }
 
   function deleteProduct(productId) {
@@ -623,6 +670,18 @@ export default function App() {
     );
     setCart((currentCart) => currentCart.filter((item) => item.id !== productId));
     setExpandedProductId(null);
+    markProductsChanged();
+  }
+
+  function toggleProductVisibility(productId) {
+    setStoreProducts((currentProducts) =>
+      currentProducts.map((product) =>
+        product.id === productId
+          ? { ...product, isVisible: product.isVisible === false }
+          : product,
+      ),
+    );
+    markProductsChanged(productId);
   }
 
   function updateFlavour(productId, flavourIndex, field, value) {
@@ -653,6 +712,7 @@ export default function App() {
         };
       }),
     );
+    markProductsChanged(productId);
   }
 
   function addFlavour(productId) {
@@ -670,6 +730,7 @@ export default function App() {
           : product,
       ),
     );
+    markProductsChanged(productId);
   }
 
   function removeFlavour(productId, flavourIndex) {
@@ -686,6 +747,7 @@ export default function App() {
           : product,
       ),
     );
+    markProductsChanged(productId);
   }
 
   function checkoutWithWhatsApp() {
@@ -848,7 +910,7 @@ export default function App() {
                   onClick={() => updateSharedProducts()}
                   type="button"
                 >
-                  {savingProductId === "all" ? "Saving..." : "Save all"}
+                  {savingProductId === "all" ? "Saving..." : "Save now"}
                 </button>
                 <button onClick={addProduct} type="button">
                   Add product
@@ -907,6 +969,7 @@ export default function App() {
             {filteredAdminProducts.map((product) => {
               const totalStock = getTotalStock(product);
               const isExpanded = expandedProductId === product.id;
+              const isVisible = product.isVisible !== false;
               const stockStatus =
                 totalStock === 0
                   ? "out-stock"
@@ -924,7 +987,7 @@ export default function App() {
                 <article
                   className={`control-row ${isExpanded ? "expanded" : ""} ${
                     draggedProductId === product.id ? "dragging" : ""
-                  }`}
+                  } ${isVisible ? "" : "hidden-product"}`}
                   draggable={!adminSearchTerm}
                   onDragEnd={handleProductDragEnd}
                   onDragOver={handleProductDragOver}
@@ -951,13 +1014,26 @@ export default function App() {
                         {product.flavours.length} flavours {" - "} {product.price}
                       </small>
                     </span>
-                    <strong className={stockStatus}>{stockLabel}</strong>
+                    <strong className={isVisible ? stockStatus : "hidden-stock"}>
+                      {isVisible ? stockLabel : "Hidden"}
+                    </strong>
                     <em>{isExpanded ? "Close" : "Edit"}</em>
                   </button>
 
                   {isExpanded && (
                     <div className="control-card-editor">
                       <div className="product-edit-fields">
+                        <label className="visibility-toggle">
+                          <span>Product visibility</span>
+                          <button
+                            aria-pressed={isVisible}
+                            className={isVisible ? "visible" : "hidden"}
+                            onClick={() => toggleProductVisibility(product.id)}
+                            type="button"
+                          >
+                            {isVisible ? "Shown on store" : "Hidden from store"}
+                          </button>
+                        </label>
                         <label>
                           <span>Product name</span>
                           <input
@@ -1027,16 +1103,6 @@ export default function App() {
                           />
                         </label>
                         <div className="product-update-actions">
-                          <button
-                            className="update-product"
-                            disabled={savingProductId === product.id}
-                            onClick={() => updateSharedProducts(product.id)}
-                            type="button"
-                          >
-                            {savingProductId === product.id
-                              ? "Updating..."
-                              : "Update"}
-                          </button>
                           {productUpdateStatus[product.id] && (
                             <span>{productUpdateStatus[product.id]}</span>
                           )}
@@ -1154,13 +1220,13 @@ export default function App() {
               <h2>Popular right now</h2>
             </div>
             <p>
-              {storeProducts.length} products available {" - "}
+              {visibleProducts.length} products available {" - "}
               {cartCount} in cart
             </p>
           </section>
 
           <section className="product-grid">
-            {storeProducts.map((product) => {
+            {visibleProducts.map((product) => {
               const availableFlavours = getFlavourNames(product);
               const preferredFlavour = availableFlavours.includes(
                 selectedFlavours[product.id],
