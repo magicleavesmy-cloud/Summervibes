@@ -3,9 +3,6 @@ import "./App.css";
 import { products } from "./products";
 
 const whatsappNumber = "601165302622";
-const productsStorageKey = "summer-vibes-products";
-const productsVersionStorageKey = "summer-vibes-products-version";
-const productsVersion = "2026-05-18-spacebar-flavours";
 const adminPasscode = "2622";
 const adminSessionKey = "summer-vibes-admin";
 const themeStorageKey = "summer-vibes-theme";
@@ -151,27 +148,18 @@ function mergeSavedProducts(savedProducts, fallbackProducts) {
   return [...mergedProducts, ...newFallbackProducts];
 }
 
-function getInitialProducts() {
-  const fallbackProducts = getFallbackProducts();
-
+async function getApiErrorMessage(response) {
   try {
-    const savedProductsVersion = window.localStorage.getItem(
-      productsVersionStorageKey,
-    );
+    const data = await response.json();
 
-    if (savedProductsVersion !== productsVersion) {
-      window.localStorage.setItem(productsVersionStorageKey, productsVersion);
-      return fallbackProducts;
+    if (data?.error) {
+      return data.error;
     }
-
-    const savedProducts = JSON.parse(
-      window.localStorage.getItem(productsStorageKey),
-    );
-
-    return mergeSavedProducts(savedProducts, fallbackProducts);
   } catch {
-    return fallbackProducts;
+    // Fall through to the generic status message below.
   }
+
+  return `Request failed with ${response.status}`;
 }
 
 function CartItem({ addToCart, item, product, removeFromCart }) {
@@ -217,8 +205,8 @@ export default function App() {
     () => window.sessionStorage.getItem(adminSessionKey) === "true",
   );
   const [expandedProductId, setExpandedProductId] = useState(null);
-  const [storeProducts, setStoreProducts] = useState(getInitialProducts);
-  const [, setIsRemoteSyncReady] = useState(false);
+  const [storeProducts, setStoreProducts] = useState(getFallbackProducts);
+  const [remoteSyncStatus, setRemoteSyncStatus] = useState("checking");
   const [cart, setCart] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
@@ -226,6 +214,7 @@ export default function App() {
   const [draggedProductId, setDraggedProductId] = useState(null);
   const [savingProductId, setSavingProductId] = useState(null);
   const [productUpdateStatus, setProductUpdateStatus] = useState({});
+  const [sharedUpdateStatus, setSharedUpdateStatus] = useState("");
   const [theme, setTheme] = useState(
     () => window.localStorage.getItem(themeStorageKey) || "light",
   );
@@ -245,11 +234,14 @@ export default function App() {
         });
 
         if (response.status === 501) {
+          if (isMounted) {
+            setRemoteSyncStatus("unconfigured");
+          }
           return;
         }
 
         if (!response.ok) {
-          throw new Error("Unable to load shared products");
+          throw new Error(await getApiErrorMessage(response));
         }
 
         const data = await response.json();
@@ -261,11 +253,11 @@ export default function App() {
         }
 
         if (isMounted) {
-          setIsRemoteSyncReady(true);
+          setRemoteSyncStatus("ready");
         }
       } catch {
         if (isMounted) {
-          setIsRemoteSyncReady(false);
+          setRemoteSyncStatus("error");
         }
       }
     }
@@ -281,16 +273,6 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem(themeStorageKey, theme);
   }, [theme]);
-
-  useEffect(() => {
-    const serializedProducts = serializeProducts(storeProducts);
-
-    window.localStorage.setItem(
-      productsStorageKey,
-      JSON.stringify(serializedProducts),
-    );
-
-  }, [storeProducts]);
 
   useEffect(() => {
     function closeDetailWithEscape(event) {
@@ -540,6 +522,7 @@ export default function App() {
       ...currentStatus,
       [productId]: "",
     }));
+    setSharedUpdateStatus("");
   }
 
   function clearProductUpdateStatus(productId) {
@@ -547,14 +530,23 @@ export default function App() {
       ...currentStatus,
       [productId]: "",
     }));
+    setSharedUpdateStatus("");
   }
 
-  async function updateSharedProducts(productId) {
-    setSavingProductId(productId);
-    setProductUpdateStatus((currentStatus) => ({
-      ...currentStatus,
-      [productId]: "Updating...",
-    }));
+  async function updateSharedProducts(productId = null) {
+    const isProductSave = productId !== null;
+
+    setSavingProductId(isProductSave ? productId : "all");
+    setRemoteSyncStatus("saving");
+
+    if (isProductSave) {
+      setProductUpdateStatus((currentStatus) => ({
+        ...currentStatus,
+        [productId]: "Updating...",
+      }));
+    } else {
+      setSharedUpdateStatus("Updating...");
+    }
 
     try {
       const response = await fetch(productsApiPath, {
@@ -564,20 +556,36 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error("Unable to update shared products");
+        throw new Error(await getApiErrorMessage(response));
       }
 
-      setIsRemoteSyncReady(true);
-      setProductUpdateStatus((currentStatus) => ({
-        ...currentStatus,
-        [productId]: "Updated",
-      }));
-    } catch {
-      setIsRemoteSyncReady(false);
-      setProductUpdateStatus((currentStatus) => ({
-        ...currentStatus,
-        [productId]: "Update failed",
-      }));
+      setRemoteSyncStatus("ready");
+
+      if (isProductSave) {
+        setProductUpdateStatus((currentStatus) => ({
+          ...currentStatus,
+          [productId]: "Updated",
+        }));
+      } else {
+        setSharedUpdateStatus("Updated");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.message ||
+        "Update failed. Check the Vercel shared inventory settings.";
+
+      setRemoteSyncStatus(
+        errorMessage.includes("not configured") ? "unconfigured" : "error",
+      );
+
+      if (isProductSave) {
+        setProductUpdateStatus((currentStatus) => ({
+          ...currentStatus,
+          [productId]: errorMessage,
+        }));
+      } else {
+        setSharedUpdateStatus(errorMessage);
+      }
     } finally {
       setSavingProductId(null);
     }
@@ -823,7 +831,25 @@ export default function App() {
               <h1>Product control</h1>
             </div>
             <div className="control-header-actions">
+              <p className={`sync-status ${remoteSyncStatus}`}>
+                {remoteSyncStatus === "ready"
+                  ? "Shared inventory connected"
+                  : remoteSyncStatus === "saving"
+                    ? "Saving shared inventory..."
+                    : remoteSyncStatus === "unconfigured"
+                      ? "Shared inventory is not configured"
+                      : remoteSyncStatus === "error"
+                        ? "Shared inventory is not saving"
+                        : "Checking shared inventory..."}
+              </p>
               <div>
+                <button
+                  disabled={savingProductId === "all"}
+                  onClick={() => updateSharedProducts()}
+                  type="button"
+                >
+                  {savingProductId === "all" ? "Saving..." : "Save all"}
+                </button>
                 <button onClick={addProduct} type="button">
                   Add product
                 </button>
@@ -831,6 +857,7 @@ export default function App() {
                   Logout
                 </button>
               </div>
+              {sharedUpdateStatus && <span>{sharedUpdateStatus}</span>}
             </div>
           </div>
 

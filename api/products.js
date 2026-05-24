@@ -12,23 +12,23 @@ function getKvConfig() {
     return null;
   }
 
-  return { token, url };
+  return { token, url: url.replace(/\/+$/, "") };
 }
 
-async function kvRequest(path, options = {}) {
+async function kvCommand(command) {
   const config = getKvConfig();
 
   if (!config) {
     return null;
   }
 
-  const response = await fetch(`${config.url}${path}`, {
-    ...options,
+  const response = await fetch(config.url, {
+    body: JSON.stringify(command),
     headers: {
       Authorization: `Bearer ${config.token}`,
       "Content-Type": "application/json",
-      ...options.headers,
     },
+    method: "POST",
   });
 
   if (!response.ok) {
@@ -36,6 +36,18 @@ async function kvRequest(path, options = {}) {
   }
 
   return response.json();
+}
+
+function parseRequestBody(body) {
+  if (typeof body === "string") {
+    try {
+      return JSON.parse(body);
+    } catch {
+      return {};
+    }
+  }
+
+  return body || {};
 }
 
 export default async function handler(request, response) {
@@ -52,24 +64,28 @@ export default async function handler(request, response) {
       });
     }
 
+    if (request.method === "GET" && request.query?.debug === "1") {
+      return response.status(200).json({
+        configured: true,
+        storage: "upstash-rest",
+      });
+    }
+
     if (request.method === "GET") {
-      const result = await kvRequest(`/get/${inventoryKey}`);
+      const result = await kvCommand(["GET", inventoryKey]);
       const products = result?.result ? JSON.parse(result.result) : null;
 
       return response.status(200).json({ products });
     }
 
     if (request.method === "POST") {
-      const { products } = request.body || {};
+      const { products } = parseRequestBody(request.body);
 
       if (!Array.isArray(products)) {
         return response.status(400).json({ error: "products must be an array" });
       }
 
-      await kvRequest(`/set/${inventoryKey}`, {
-        body: JSON.stringify(JSON.stringify(products)),
-        method: "POST",
-      });
+      await kvCommand(["SET", inventoryKey, JSON.stringify(products)]);
 
       return response.status(200).json({ ok: true });
     }

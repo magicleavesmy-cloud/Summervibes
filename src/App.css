@@ -930,6 +930,35 @@
   text-align: right;
 }
 
+.control-header-actions > span {
+  color: #777777;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sync-status {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(119, 119, 119, 0.12);
+}
+
+.sync-status.ready {
+  background: rgba(79, 143, 103, 0.14);
+  color: #315f44;
+}
+
+.sync-status.saving,
+.sync-status.checking {
+  background: rgba(183, 119, 97, 0.14);
+  color: #8b5441;
+}
+
+.sync-status.error,
+.sync-status.unconfigured {
+  background: rgba(111, 29, 56, 0.12);
+  color: #6f1d38;
+}
+
 .control-header-actions div {
   display: flex;
   flex-wrap: wrap;
