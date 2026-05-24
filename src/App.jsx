@@ -540,6 +540,14 @@ export default function App() {
     });
   }
 
+  function goHome() {
+    setStoreSearch("");
+    closeCart();
+    window.requestAnimationFrame(() => {
+      scrollToStoreSection("home");
+    });
+  }
+
   function handleProductDragStart(event, productId) {
     if (adminSearchTerm) {
       event.preventDefault();
@@ -871,7 +879,7 @@ export default function App() {
         {!isAdminRoute && (
           <div className="header-chip-nav" aria-label="Customer shortcuts">
             <button
-              onClick={() => scrollToStoreSection("home")}
+              onClick={goHome}
               type="button"
             >
               Home
