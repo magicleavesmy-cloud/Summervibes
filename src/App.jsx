@@ -392,6 +392,11 @@ export default function App() {
       return searchableProduct.includes(adminSearchTerm);
     });
   }, [adminSearchTerm, storeProducts]);
+  const selectedAdminProduct =
+    (expandedProductId ? productById.get(expandedProductId) : null) ||
+    filteredAdminProducts[0] ||
+    storeProducts[0] ||
+    null;
 
   function addToCart(product, flavour) {
     const availableFlavours = getFlavourNames(product);
@@ -965,178 +970,212 @@ export default function App() {
             </p>
           </section>
 
-          <div className="control-list">
-            {filteredAdminProducts.map((product) => {
-              const totalStock = getTotalStock(product);
-              const isExpanded = expandedProductId === product.id;
-              const isVisible = product.isVisible !== false;
-              const stockStatus =
-                totalStock === 0
-                  ? "out-stock"
-                  : totalStock <= 3
-                    ? "low-stock"
-                    : "in-stock";
-              const stockLabel =
-                totalStock === 0
-                  ? "Out of stock"
-                  : totalStock <= 3
-                    ? `${totalStock} low`
-                    : `${totalStock} total`;
+          <div className="control-workspace">
+            <div className="control-list" aria-label="Product list">
+              {filteredAdminProducts.map((product) => {
+                const totalStock = getTotalStock(product);
+                const isSelected = selectedAdminProduct?.id === product.id;
+                const isVisible = product.isVisible !== false;
+                const stockStatus =
+                  totalStock === 0
+                    ? "out-stock"
+                    : totalStock <= 3
+                      ? "low-stock"
+                      : "in-stock";
+                const stockLabel =
+                  totalStock === 0
+                    ? "Out of stock"
+                    : totalStock <= 3
+                      ? `${totalStock} low`
+                      : `${totalStock} total`;
 
-              return (
-                <article
-                  className={`control-row ${isExpanded ? "expanded" : ""} ${
-                    draggedProductId === product.id ? "dragging" : ""
-                  } ${isVisible ? "" : "hidden-product"}`}
-                  draggable={!adminSearchTerm}
-                  onDragEnd={handleProductDragEnd}
-                  onDragOver={handleProductDragOver}
-                  onDragStart={(event) =>
-                    handleProductDragStart(event, product.id)
-                  }
-                  onDrop={(event) => handleProductDrop(event, product.id)}
-                  key={product.id}
-                >
-                  <button
-                    className="control-card-summary"
-                    onClick={() =>
-                      setExpandedProductId(isExpanded ? null : product.id)
+                return (
+                  <article
+                    className={`control-row ${isSelected ? "selected" : ""} ${
+                      draggedProductId === product.id ? "dragging" : ""
+                    } ${isVisible ? "" : "hidden-product"}`}
+                    draggable={!adminSearchTerm}
+                    onDragEnd={handleProductDragEnd}
+                    onDragOver={handleProductDragOver}
+                    onDragStart={(event) =>
+                      handleProductDragStart(event, product.id)
                     }
-                    type="button"
+                    onDrop={(event) => handleProductDrop(event, product.id)}
+                    key={product.id}
                   >
-                    <span className="drag-handle" aria-hidden="true">
-                      ::
-                    </span>
-                    <img src={product.image} alt="" />
-                    <span>
-                      <strong>{product.name}</strong>
-                      <small>
-                        {product.flavours.length} flavours {" - "} {product.price}
-                      </small>
-                    </span>
-                    <strong className={isVisible ? stockStatus : "hidden-stock"}>
-                      {isVisible ? stockLabel : "Hidden"}
-                    </strong>
-                    <em>{isExpanded ? "Close" : "Edit"}</em>
-                  </button>
+                    <button
+                      className="control-card-summary"
+                      onClick={() => setExpandedProductId(product.id)}
+                      type="button"
+                    >
+                      <span className="drag-handle" aria-hidden="true">
+                        ::
+                      </span>
+                      <img src={product.image} alt="" />
+                      <span>
+                        <strong>{product.name}</strong>
+                        <small>
+                          {product.flavours.length} flavours {" - "}{" "}
+                          {product.price}
+                        </small>
+                      </span>
+                      <strong
+                        className={isVisible ? stockStatus : "hidden-stock"}
+                      >
+                        {isVisible ? stockLabel : "Hidden"}
+                      </strong>
+                    </button>
+                  </article>
+                );
+              })}
+              {filteredAdminProducts.length === 0 && (
+                <p className="control-empty">No products match this search.</p>
+              )}
+            </div>
 
-                  {isExpanded && (
-                    <div className="control-card-editor">
-                      <div className="product-edit-fields">
-                        <label className="visibility-toggle">
-                          <span>Product visibility</span>
-                          <button
-                            aria-pressed={isVisible}
-                            className={isVisible ? "visible" : "hidden"}
-                            onClick={() => toggleProductVisibility(product.id)}
-                            type="button"
-                          >
-                            {isVisible ? "Shown on store" : "Hidden from store"}
-                          </button>
-                        </label>
-                        <label>
-                          <span>Product name</span>
-                          <input
-                            onChange={(event) =>
-                              updateProduct(
-                                product.id,
-                                "name",
-                                event.target.value,
-                              )
-                            }
-                            value={product.name}
-                          />
-                        </label>
-                        <label>
-                          <span>Price</span>
-                          <input
-                            onChange={(event) =>
-                              updateProduct(
-                                product.id,
-                                "price",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="RM42"
-                            value={product.price}
-                          />
-                        </label>
-                        <label>
-                          <span>Product tagline</span>
-                          <input
-                            onChange={(event) =>
-                              updateProduct(
-                                product.id,
-                                "tag",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="Limited drop"
-                            value={product.tag}
-                          />
-                        </label>
-                        <label>
-                          <span>Product subtitle</span>
-                          <input
-                            onChange={(event) =>
-                              updateProduct(
-                                product.id,
-                                "description",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="Short product detail text"
-                            value={product.description || ""}
-                          />
-                        </label>
-                        <label>
-                          <span>Image URL</span>
-                          <input
-                            onChange={(event) =>
-                              updateProduct(
-                                product.id,
-                                "image",
-                                event.target.value,
-                              )
-                            }
-                            value={product.image}
-                          />
-                        </label>
-                        <div className="product-update-actions">
-                          {productUpdateStatus[product.id] && (
-                            <span>{productUpdateStatus[product.id]}</span>
-                          )}
-                        </div>
+            <aside className="control-editor-panel" aria-label="Product editor">
+              {selectedAdminProduct ? (
+                <>
+                  <div className="control-editor-header">
+                    <img src={selectedAdminProduct.image} alt="" />
+                    <div>
+                      <p className="eyebrow">Editing product</p>
+                      <h2>{selectedAdminProduct.name}</h2>
+                      <span>
+                        {selectedAdminProduct.flavours.length} flavours {" - "}{" "}
+                        {selectedAdminProduct.price}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="control-card-editor">
+                    <div className="product-edit-fields">
+                      <label className="visibility-toggle">
+                        <span>Product visibility</span>
                         <button
-                          className="delete-product"
-                          onClick={() => deleteProduct(product.id)}
+                          aria-pressed={selectedAdminProduct.isVisible !== false}
+                          className={
+                            selectedAdminProduct.isVisible !== false
+                              ? "visible"
+                              : "hidden"
+                          }
+                          onClick={() =>
+                            toggleProductVisibility(selectedAdminProduct.id)
+                          }
                           type="button"
                         >
-                          Delete product
+                          {selectedAdminProduct.isVisible !== false
+                            ? "Shown on store"
+                            : "Hidden from store"}
+                        </button>
+                      </label>
+                      <label>
+                        <span>Product name</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "name",
+                              event.target.value,
+                            )
+                          }
+                          value={selectedAdminProduct.name}
+                        />
+                      </label>
+                      <label>
+                        <span>Price</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "price",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="RM42"
+                          value={selectedAdminProduct.price}
+                        />
+                      </label>
+                      <label>
+                        <span>Product tagline</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "tag",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Limited drop"
+                          value={selectedAdminProduct.tag}
+                        />
+                      </label>
+                      <label>
+                        <span>Product subtitle</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "description",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Short product detail text"
+                          value={selectedAdminProduct.description || ""}
+                        />
+                      </label>
+                      <label>
+                        <span>Image URL</span>
+                        <input
+                          onChange={(event) =>
+                            updateProduct(
+                              selectedAdminProduct.id,
+                              "image",
+                              event.target.value,
+                            )
+                          }
+                          value={selectedAdminProduct.image}
+                        />
+                      </label>
+                      <div className="product-update-actions">
+                        {productUpdateStatus[selectedAdminProduct.id] && (
+                          <span>
+                            {productUpdateStatus[selectedAdminProduct.id]}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        className="delete-product"
+                        onClick={() => deleteProduct(selectedAdminProduct.id)}
+                        type="button"
+                      >
+                        Delete product
+                      </button>
+                    </div>
+
+                    <div className="flavour-control">
+                      <div className="flavour-control-header">
+                        <span>Flavours</span>
+                        <button
+                          className="add-flavour"
+                          onClick={() => addFlavour(selectedAdminProduct.id)}
+                          type="button"
+                        >
+                          Add flavour
                         </button>
                       </div>
-                      <div className="flavour-control">
-                        <div className="flavour-control-header">
-                          <span>Flavours</span>
-                          <button
-                            className="add-flavour"
-                            onClick={() => addFlavour(product.id)}
-                            type="button"
-                          >
-                            Add flavour
-                          </button>
-                        </div>
-                        <div className="flavour-inventory">
-                          {product.flavours.map((flavour, flavourIndex) => (
+                      <div className="flavour-inventory">
+                        {selectedAdminProduct.flavours.map(
+                          (flavour, flavourIndex) => (
                             <div
                               className="flavour-line"
-                              key={`${product.id}-${flavourIndex}`}
+                              key={`${selectedAdminProduct.id}-${flavourIndex}`}
                             >
                               <input
                                 aria-label="Flavour name"
                                 onChange={(event) =>
                                   updateFlavour(
-                                    product.id,
+                                    selectedAdminProduct.id,
                                     flavourIndex,
                                     "name",
                                     event.target.value,
@@ -1149,7 +1188,7 @@ export default function App() {
                                 min="0"
                                 onChange={(event) =>
                                   updateFlavour(
-                                    product.id,
+                                    selectedAdminProduct.id,
                                     flavourIndex,
                                     "stock",
                                     event.target.value,
@@ -1162,36 +1201,38 @@ export default function App() {
                                 aria-label={`${flavour.name} price override`}
                                 onChange={(event) =>
                                   updateFlavour(
-                                    product.id,
+                                    selectedAdminProduct.id,
                                     flavourIndex,
                                     "price",
                                     event.target.value,
                                   )
                                 }
-                                placeholder={product.price}
+                                placeholder={selectedAdminProduct.price}
                                 value={flavour.price || ""}
                               />
                               <button
                                 className="remove-flavour"
                                 onClick={() =>
-                                  removeFlavour(product.id, flavourIndex)
+                                  removeFlavour(
+                                    selectedAdminProduct.id,
+                                    flavourIndex,
+                                  )
                                 }
                                 type="button"
                               >
                                 Remove
                               </button>
                             </div>
-                          ))}
-                        </div>
+                          ),
+                        )}
                       </div>
                     </div>
-                  )}
-                </article>
-              );
-            })}
-            {filteredAdminProducts.length === 0 && (
-              <p className="control-empty">No products match this search.</p>
-            )}
+                  </div>
+                </>
+              ) : (
+                <p className="control-empty">Select a product to edit.</p>
+              )}
+            </aside>
           </div>
         </section>
         )

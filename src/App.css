@@ -850,7 +850,8 @@
 
 .admin-login form,
 .control-header,
-.control-row {
+.control-row,
+.control-editor-panel {
   border: 1px solid rgba(255, 255, 255, 0.86);
   background: rgba(255, 252, 246, 0.86);
   box-shadow: 0 18px 42px rgba(113, 74, 58, 0.12);
@@ -873,13 +874,15 @@
 }
 
 .admin-login label,
-.control-row label {
+.control-row label,
+.control-editor-panel label {
   display: grid;
   gap: 7px;
 }
 
 .admin-login label span,
 .control-row label span,
+.control-editor-panel label span,
 .flavour-control-header span {
   color: #b77761;
   font-size: 11px;
@@ -889,7 +892,8 @@
 }
 
 .admin-login input,
-.control-row input {
+.control-row input,
+.control-editor-panel input {
   width: 100%;
   min-height: 34px;
   border: 1px solid rgba(176, 119, 97, 0.22);
@@ -1056,7 +1060,15 @@
 
 .control-list {
   display: grid;
+  align-content: start;
   gap: 8px;
+}
+
+.control-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.64fr);
+  align-items: start;
+  gap: 10px;
 }
 
 .control-row {
@@ -1077,6 +1089,11 @@
   transform: none;
 }
 
+.control-row.selected {
+  outline: 2px solid rgba(245, 138, 132, 0.42);
+  outline-offset: 0;
+}
+
 .control-row[draggable="true"] {
   cursor: grab;
 }
@@ -1092,7 +1109,7 @@
 
 .control-card-summary {
   display: grid;
-  grid-template-columns: 22px 44px minmax(0, 1fr) auto auto;
+  grid-template-columns: 22px 44px minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
   gap: 8px;
@@ -1162,11 +1179,50 @@
   color: #666666;
 }
 
+.control-editor-panel {
+  position: sticky;
+  top: 12px;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.control-editor-header {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(176, 119, 97, 0.12);
+}
+
+.control-editor-header img {
+  width: 62px;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.control-editor-header h2 {
+  overflow: hidden;
+  margin: 0;
+  color: #351c28;
+  font-size: 20px;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.control-editor-header span {
+  color: #987b75;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .control-card-editor {
   display: grid;
   grid-template-columns: minmax(240px, 0.78fr) minmax(300px, 1.22fr);
   gap: 10px;
-  padding: 0 10px 10px;
+  padding: 10px;
 }
 
 .product-edit-fields {
@@ -1581,6 +1637,7 @@
 :root[data-theme="dark"] .flavour-trigger,
 :root[data-theme="dark"] .admin-login input,
 :root[data-theme="dark"] .control-row input,
+:root[data-theme="dark"] .control-editor-panel input,
 :root[data-theme="dark"] .control-toolbar input {
   border-color: rgba(255, 255, 255, 0.12);
   background: #151515;
@@ -1666,6 +1723,14 @@
 
   .control-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .control-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .control-editor-panel {
+    position: static;
   }
 
   .control-card-editor {
