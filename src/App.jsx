@@ -355,24 +355,53 @@ export default function App() {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const storeSearchTerm = storeSearch.trim().toLowerCase();
   const adminSearchTerm = adminSearch.trim().toLowerCase();
-  const filteredVisibleProducts = useMemo(() => {
+  const visibleProductResults = useMemo(() => {
     if (!storeSearchTerm) {
-      return visibleProducts;
+      return visibleProducts.map((product) => ({
+        product,
+        resultId: String(product.id),
+        selectedFlavour: null,
+      }));
     }
 
-    return visibleProducts.filter((product) => {
-      const searchableProduct = [
+    return visibleProducts.flatMap((product) => {
+      const searchableProductDetails = [
         product.name,
         product.category,
         product.price,
         product.tag,
         product.puffs,
-        ...product.flavours.map((flavour) => flavour.name),
+        product.description,
       ]
         .join(" ")
         .toLowerCase();
 
-      return searchableProduct.includes(storeSearchTerm);
+      const matchingFlavours = product.flavours.filter((flavour) =>
+        [searchableProductDetails, flavour.name, flavour.price]
+          .join(" ")
+          .toLowerCase()
+          .includes(storeSearchTerm),
+      );
+
+      if (matchingFlavours.length > 0) {
+        return matchingFlavours.map((flavour) => ({
+          product,
+          resultId: `${product.id}-${flavour.name}`,
+          selectedFlavour: flavour.name,
+        }));
+      }
+
+      if (searchableProductDetails.includes(storeSearchTerm)) {
+        return [
+          {
+            product,
+            resultId: `${product.id}-product`,
+            selectedFlavour: null,
+          },
+        ];
+      }
+
+      return [];
     });
   }, [storeSearchTerm, visibleProducts]);
   const adminStats = useMemo(() => {
@@ -502,17 +531,6 @@ export default function App() {
 
   function closeCart() {
     setIsCartOpen(false);
-  }
-
-  function handleProductCardKeyDown(event, productId) {
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openProductDetail(productId);
-    }
   }
 
   function handleProductDragStart(event, productId) {
@@ -1324,23 +1342,29 @@ export default function App() {
             </label>
             <p>
               {storeSearchTerm
-                ? `${filteredVisibleProducts.length} of ${visibleProducts.length}`
-                : visibleProducts.length}{" "}
-              products available {" - "}
+                ? `${visibleProductResults.length} results`
+                : `${visibleProducts.length} products available`}{" "}
+              {" - "}
               {cartCount} in cart
             </p>
           </section>
 
           <section className="product-grid">
-            {filteredVisibleProducts.map((product) => {
+            {visibleProductResults.map(({
+              product,
+              resultId,
+              selectedFlavour: resultFlavour,
+            }) => {
               const availableFlavours = getFlavourNames(product);
-              const preferredFlavour = availableFlavours.includes(
-                selectedFlavours[product.id],
-              )
-                ? selectedFlavours[product.id]
-                : availableFlavours[0];
-              const selectedFlavour =
-                getFlavourStock(product, preferredFlavour) > 0
+              const isSearchResult = Boolean(storeSearchTerm && resultFlavour);
+              const preferredFlavour = resultFlavour
+                ? resultFlavour
+                : availableFlavours.includes(selectedFlavours[product.id])
+                  ? selectedFlavours[product.id]
+                  : availableFlavours[0];
+              const selectedFlavour = isSearchResult
+                ? preferredFlavour
+                : getFlavourStock(product, preferredFlavour) > 0
                   ? preferredFlavour
                   : getFirstInStockFlavour(product, preferredFlavour);
               const cartQuantity = cart
@@ -1358,11 +1382,28 @@ export default function App() {
               return (
                 <article
                   className="product-card"
-                  key={product.id}
-                  onClick={() => openProductDetail(product.id)}
-                  onKeyDown={(event) =>
-                    handleProductCardKeyDown(event, product.id)
-                  }
+                  key={resultId}
+                  onClick={() => {
+                    setSelectedFlavours((currentFlavours) => ({
+                      ...currentFlavours,
+                      [product.id]: selectedFlavour,
+                    }));
+                    openProductDetail(product.id);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget) {
+                      return;
+                    }
+
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedFlavours((currentFlavours) => ({
+                        ...currentFlavours,
+                        [product.id]: selectedFlavour,
+                      }));
+                      openProductDetail(product.id);
+                    }
+                  }}
                   role="button"
                   tabIndex="0"
                 >
@@ -1378,6 +1419,11 @@ export default function App() {
                       {product.puffs && (
                         <em className="puff-chip">{product.puffs}</em>
                       )}
+                      {isSearchResult && (
+                        <em className="search-flavour-chip">
+                          {selectedFlavour}
+                        </em>
+                      )}
                     </h3>
                     <p className="product-subtitle">
                       {product.description ||
@@ -1387,39 +1433,49 @@ export default function App() {
                       className="flavour-select"
                       onClick={(event) => event.stopPropagation()}
                     >
-                      <span>Choose flavour</span>
-                      <label className="flavour-dropdown">
-                        <span className="sr-only">
-                          Choose flavour for {product.name}
-                        </span>
-                        <select
-                          className="flavour-trigger"
-                          onClick={(event) => event.stopPropagation()}
-                          onChange={(event) =>
-                            setSelectedFlavours((currentFlavours) => ({
-                              ...currentFlavours,
-                              [product.id]: event.target.value,
-                            }))
-                          }
-                          value={selectedFlavour}
-                        >
-                          {availableFlavours.map((flavour) => {
-                            const hasNoStock =
-                              getFlavourStock(product, flavour) <= 0;
+                      <span>
+                        {isSearchResult ? "Matched flavour" : "Choose flavour"}
+                      </span>
+                      {isSearchResult ? (
+                        <strong className="search-flavour-name">
+                          {selectedFlavour}
+                        </strong>
+                      ) : (
+                        <label className="flavour-dropdown">
+                          <span className="sr-only">
+                            Choose flavour for {product.name}
+                          </span>
+                          <select
+                            className="flavour-trigger"
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={(event) =>
+                              setSelectedFlavours((currentFlavours) => ({
+                                ...currentFlavours,
+                                [product.id]: event.target.value,
+                              }))
+                            }
+                            value={selectedFlavour}
+                          >
+                            {availableFlavours.map((flavour) => {
+                              const hasNoStock =
+                                getFlavourStock(product, flavour) <= 0;
 
-                            return (
-                              <option
-                                className={hasNoStock ? "no-stock-option" : ""}
-                                disabled={hasNoStock}
-                                key={flavour}
-                                value={flavour}
-                              >
-                                {hasNoStock ? `${flavour} - No stock` : flavour}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </label>
+                              return (
+                                <option
+                                  className={hasNoStock ? "no-stock-option" : ""}
+                                  disabled={hasNoStock}
+                                  key={flavour}
+                                  value={flavour}
+                                >
+                                  {hasNoStock
+                                    ? `${flavour} - No stock`
+                                    : flavour}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </label>
+                      )}
                       {flavourStock <= 0 && (
                         <em className="flavour-stock-note">No stock</em>
                       )}
@@ -1436,7 +1492,7 @@ export default function App() {
                     disabled={isSoldOut}
                     onClick={(event) => {
                       event.stopPropagation();
-                      addToCart(product);
+                      addToCart(product, selectedFlavour);
                     }}
                     type="button"
                   >
@@ -1445,7 +1501,7 @@ export default function App() {
                 </article>
               );
             })}
-            {filteredVisibleProducts.length === 0 && (
+            {visibleProductResults.length === 0 && (
               <p className="catalog-empty">No products match this search.</p>
             )}
           </section>

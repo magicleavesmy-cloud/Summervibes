@@ -614,6 +614,24 @@
   vertical-align: middle;
 }
 
+.search-flavour-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 5px 0 0 6px;
+  padding: 2px 7px;
+  border: 1px solid rgba(176, 119, 97, 0.22);
+  border-radius: 999px;
+  background: #fffaf2;
+  color: #6f1d38;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 .product-subtitle {
   display: -webkit-box;
   margin-top: 5px;
@@ -653,6 +671,19 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 800;
+  padding: 7px 9px;
+}
+
+.search-flavour-name {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid rgba(176, 119, 97, 0.2);
+  border-radius: 12px;
+  background: #fffaf2;
+  color: #4d302e;
+  font-size: 12px;
+  font-weight: 900;
   padding: 7px 9px;
 }
 
@@ -1295,6 +1326,12 @@
   color: #ffffff;
 }
 
+:root[data-theme="dark"] .search-flavour-chip {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: #151515;
+  color: #f3f3f3;
+}
+
 .control-editor-header span {
   color: #987b75;
   font-size: 11px;
@@ -1730,6 +1767,7 @@
 
 :root[data-theme="dark"] .flavour-trigger,
 :root[data-theme="dark"] .catalog-search input,
+:root[data-theme="dark"] .search-flavour-name,
 :root[data-theme="dark"] .admin-login input,
 :root[data-theme="dark"] .control-row input,
 :root[data-theme="dark"] .control-editor-panel input,
