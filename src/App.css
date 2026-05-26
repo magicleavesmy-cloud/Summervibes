@@ -1598,8 +1598,26 @@
 
 .flavour-line {
   display: grid;
-  grid-template-columns: minmax(110px, 1fr) 54px 74px auto;
+  grid-template-columns: minmax(110px, 1fr) 92px 74px auto;
   gap: 4px;
+}
+
+.stock-toggle {
+  min-height: 30px;
+  border: 1px solid rgba(79, 143, 103, 0.18);
+  border-radius: 8px;
+  background: rgba(79, 143, 103, 0.14);
+  color: #315f44;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 5px 8px;
+}
+
+.stock-toggle.out {
+  border-color: rgba(111, 29, 56, 0.16);
+  background: rgba(111, 29, 56, 0.12);
+  color: #6f1d38;
 }
 
 .visibility-toggle {
@@ -2060,6 +2078,18 @@
 :root[data-theme="dark"] .low-stock {
   background: #303030;
   color: #f3f3f3;
+}
+
+:root[data-theme="dark"] .stock-toggle.in {
+  border-color: rgba(142, 197, 163, 0.22);
+  background: rgba(142, 197, 163, 0.16);
+  color: #8ec5a3;
+}
+
+:root[data-theme="dark"] .stock-toggle.out {
+  border-color: rgba(255, 143, 171, 0.22);
+  background: rgba(255, 143, 171, 0.13);
+  color: #ff9db8;
 }
 
 :root[data-theme="dark"] .cart-totals {

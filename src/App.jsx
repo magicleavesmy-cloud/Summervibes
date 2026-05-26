@@ -44,13 +44,20 @@ function normalizeFlavours(flavours, defaultStock = 0) {
 }
 
 function getTotalStock(product) {
-  return product.flavours.reduce((total, flavour) => total + flavour.stock, 0);
+  return product.flavours.reduce(
+    (total, flavour) => total + (flavour.stock > 0 ? 1 : 0),
+    0,
+  );
 }
 
 function getFlavourStock(product, flavourName) {
   return (
     product.flavours.find((flavour) => flavour.name === flavourName)?.stock || 0
   );
+}
+
+function isFlavourInStock(product, flavourName) {
+  return getFlavourStock(product, flavourName) > 0;
 }
 
 function getFlavourPrice(product, flavourName) {
@@ -69,8 +76,7 @@ function getFlavourNames(product) {
 
 function getFirstInStockFlavour(product, fallbackFlavour) {
   return (
-    product.flavours.find((flavour) => flavour.stock > 0)?.name ||
-    fallbackFlavour
+    product.flavours.find((flavour) => flavour.stock > 0)?.name || fallbackFlavour
   );
 }
 
@@ -196,10 +202,9 @@ function CartItem({ addToCart, item, product, removeFromCart }) {
   const itemPrice = product
     ? getFlavourPrice(product, item.selectedFlavour)
     : item.price;
-  const flavourStock = product
-    ? getFlavourStock(product, item.selectedFlavour)
-    : item.stock;
-  const canAddMore = item.quantity < flavourStock;
+  const canAddMore = product
+    ? isFlavourInStock(product, item.selectedFlavour)
+    : item.stock > 0;
 
   return (
     <div className="cart-item">
@@ -484,16 +489,16 @@ export default function App() {
       (total, product) => total + product.flavours.length,
       0,
     );
-    const lowStockProducts = storeProducts.filter((product) => {
-      const totalStockForProduct = getTotalStock(product);
-      return totalStockForProduct > 0 && totalStockForProduct <= 3;
+    const availableProducts = storeProducts.filter((product) => {
+      const availableFlavours = getTotalStock(product);
+      return availableFlavours > 0;
     }).length;
     const outOfStockProducts = storeProducts.filter(
       (product) => getTotalStock(product) === 0,
     ).length;
 
     return {
-      lowStockProducts,
+      availableProducts,
       outOfStockProducts,
       totalFlavours,
       totalStock,
@@ -557,20 +562,12 @@ export default function App() {
       : availableFlavours.includes(selectedFlavours[product.id])
         ? selectedFlavours[product.id]
         : availableFlavours[0];
-    const selectedFlavour =
-      getFlavourStock(product, preferredFlavour) > 0
-        ? preferredFlavour
-        : getFirstInStockFlavour(product, preferredFlavour);
+    const selectedFlavour = isFlavourInStock(product, preferredFlavour)
+      ? preferredFlavour
+      : getFirstInStockFlavour(product, preferredFlavour);
     const selectedPrice = getFlavourPrice(product, selectedFlavour);
-    const flavourStock = getFlavourStock(product, selectedFlavour);
-    const currentQuantity = cart
-      .filter(
-        (item) =>
-          item.id === product.id && item.selectedFlavour === selectedFlavour,
-      )
-      .reduce((total, item) => total + item.quantity, 0);
 
-    if (currentQuantity >= flavourStock) {
+    if (!isFlavourInStock(product, selectedFlavour)) {
       return;
     }
 
@@ -867,7 +864,9 @@ export default function App() {
                 ...flavour,
                 [field]:
                   field === "stock"
-                    ? Math.max(0, Math.floor(Number(value) || 0))
+                    ? Number(value) > 0
+                      ? 1
+                      : 0
                     : value,
               };
             })
@@ -1116,7 +1115,7 @@ export default function App() {
 
           <section className="control-overview" aria-label="Inventory overview">
             <article>
-              <span>Total stock</span>
+              <span>In stock</span>
               <strong>{adminStats.totalStock}</strong>
             </article>
             <article>
@@ -1128,8 +1127,8 @@ export default function App() {
               <strong>{adminStats.totalFlavours}</strong>
             </article>
             <article>
-              <span>Low stock</span>
-              <strong>{adminStats.lowStockProducts}</strong>
+              <span>Available</span>
+              <strong>{adminStats.availableProducts}</strong>
             </article>
             <article>
               <span>Out</span>
@@ -1201,17 +1200,11 @@ export default function App() {
                 const isSelected = selectedAdminProduct?.id === product.id;
                 const isVisible = product.isVisible !== false;
                 const stockStatus =
-                  totalStock === 0
-                    ? "out-stock"
-                    : totalStock <= 3
-                      ? "low-stock"
-                      : "in-stock";
+                  totalStock === 0 ? "out-stock" : "in-stock";
                 const stockLabel =
                   totalStock === 0
                     ? "Out of stock"
-                    : totalStock <= 3
-                      ? `${totalStock} low`
-                      : `${totalStock} total`;
+                    : `${totalStock} in stock`;
 
                 return (
                   <article
@@ -1448,20 +1441,24 @@ export default function App() {
                                 }
                                 value={flavour.name}
                               />
-                              <input
-                                aria-label={`${flavour.name} quantity`}
-                                min="0"
-                                onChange={(event) =>
+                              <button
+                                aria-label={`${flavour.name || "Flavour"} availability`}
+                                aria-pressed={flavour.stock > 0}
+                                className={`stock-toggle ${
+                                  flavour.stock > 0 ? "in" : "out"
+                                }`}
+                                onClick={() =>
                                   updateFlavour(
                                     selectedAdminProduct.id,
                                     flavourIndex,
                                     "stock",
-                                    event.target.value,
+                                    flavour.stock > 0 ? 0 : 1,
                                   )
                                 }
-                                type="number"
-                                value={flavour.stock}
-                              />
+                                type="button"
+                              >
+                                {flavour.stock > 0 ? "In stock" : "Sold out"}
+                              </button>
                               <input
                                 aria-label={`${flavour.name} price override`}
                                 onChange={(event) =>
@@ -1604,17 +1601,8 @@ export default function App() {
                 const selectedFlavour =
                   resultFlavour ||
                   getFirstInStockFlavour(product, getFlavourNames(product)[0]);
-                const cartQuantity = cart
-                  .filter(
-                    (item) =>
-                      item.id === product.id &&
-                      item.selectedFlavour === selectedFlavour,
-                  )
-                  .reduce((total, item) => total + item.quantity, 0);
-                const flavourStock = getFlavourStock(product, selectedFlavour);
                 const selectedPrice = getFlavourPrice(product, selectedFlavour);
-                const remainingStock = Math.max(flavourStock - cartQuantity, 0);
-                const isSoldOut = remainingStock <= 0;
+                const isSoldOut = !isFlavourInStock(product, selectedFlavour);
 
                 return (
                   <article className="search-result-item" key={resultId}>
@@ -1661,10 +1649,8 @@ export default function App() {
                         <strong>{selectedPrice}</strong>
                       </span>
                       <span>
-                        <small>Stock</small>
-                        <strong>
-                          {isSoldOut ? "Sold out" : `${remainingStock} left`}
-                        </strong>
+                        <small>Status</small>
+                        <strong>{isSoldOut ? "Sold out" : "In stock"}</strong>
                       </span>
                     </div>
 
@@ -1713,20 +1699,11 @@ export default function App() {
                   : availableFlavours[0];
               const selectedFlavour = isSearchResult
                 ? preferredFlavour
-                : getFlavourStock(product, preferredFlavour) > 0
+                : isFlavourInStock(product, preferredFlavour)
                   ? preferredFlavour
                   : getFirstInStockFlavour(product, preferredFlavour);
-              const cartQuantity = cart
-                .filter(
-                  (item) =>
-                    item.id === product.id &&
-                    item.selectedFlavour === selectedFlavour,
-                )
-                .reduce((total, item) => total + item.quantity, 0);
-              const flavourStock = getFlavourStock(product, selectedFlavour);
               const selectedPrice = getFlavourPrice(product, selectedFlavour);
-              const remainingStock = Math.max(flavourStock - cartQuantity, 0);
-              const isSoldOut = remainingStock <= 0;
+              const isSoldOut = !isFlavourInStock(product, selectedFlavour);
 
               return (
                 <article
@@ -1807,7 +1784,7 @@ export default function App() {
                           >
                             {availableFlavours.map((flavour) => {
                               const hasNoStock =
-                                getFlavourStock(product, flavour) <= 0;
+                                !isFlavourInStock(product, flavour);
 
                               return (
                                 <option
@@ -1825,13 +1802,13 @@ export default function App() {
                           </select>
                         </label>
                       )}
-                      {flavourStock <= 0 && (
+                      {isSoldOut && (
                         <em className="flavour-stock-note">No stock</em>
                       )}
                     </div>
                     <div className="product-meta">
                       <strong>{selectedPrice}</strong>
-                      <span>{remainingStock} left</span>
+                      <span>{isSoldOut ? "Sold out" : "In stock"}</span>
                     </div>
                     <span className="detail-hint">View details</span>
                   </div>
@@ -1966,32 +1943,20 @@ export default function App() {
                 ? selectedFlavours[selectedProduct.id]
                 : detailFlavours[0];
               const detailSelectedFlavour =
-                getFlavourStock(selectedProduct, detailPreferredFlavour) > 0
+                isFlavourInStock(selectedProduct, detailPreferredFlavour)
                   ? detailPreferredFlavour
                   : getFirstInStockFlavour(
                       selectedProduct,
                       detailPreferredFlavour,
                     );
-              const detailCartQuantity = cart
-                .filter(
-                  (item) =>
-                    item.id === selectedProduct.id &&
-                    item.selectedFlavour === detailSelectedFlavour,
-                )
-                .reduce((total, item) => total + item.quantity, 0);
-              const detailStock = getFlavourStock(
-                selectedProduct,
-                detailSelectedFlavour,
-              );
-              const detailRemainingStock = Math.max(
-                detailStock - detailCartQuantity,
-                0,
-              );
               const detailPrice = getFlavourPrice(
                 selectedProduct,
                 detailSelectedFlavour,
               );
-              const isDetailSoldOut = detailRemainingStock <= 0;
+              const isDetailSoldOut = !isFlavourInStock(
+                selectedProduct,
+                detailSelectedFlavour,
+              );
 
               return (
                 <section
@@ -2058,7 +2023,7 @@ export default function App() {
                         >
                           {detailFlavours.map((flavour) => {
                             const hasNoStock =
-                              getFlavourStock(selectedProduct, flavour) <= 0;
+                              !isFlavourInStock(selectedProduct, flavour);
 
                             return (
                               <option
