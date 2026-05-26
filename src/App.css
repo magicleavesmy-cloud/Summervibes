@@ -1083,8 +1083,10 @@
 }
 
 .detail-stats span {
-  display: grid;
-  gap: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-width: 0;
   padding: 12px;
   border: 1px solid rgba(176, 119, 97, 0.12);
@@ -1093,19 +1095,26 @@
   color: #9a827c;
   font-size: 11px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .detail-stats strong {
-  overflow: hidden;
+  flex: 0 0 auto;
   color: #6f1d38;
   font-size: 18px;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .detail-flavour {
   display: grid;
   gap: 8px;
+}
+
+.detail-flavour .flavour-trigger {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+  padding: 12px 14px;
 }
 
 .detail-flavour > span {
@@ -2413,6 +2422,7 @@
   }
 
   .detail-stats span {
+    gap: 8px;
     padding: 9px 10px;
     border-radius: 12px;
   }
@@ -2423,6 +2433,12 @@
 
   .detail-flavour {
     gap: 5px;
+  }
+
+  .detail-flavour .flavour-trigger {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 10px 12px;
   }
 
   .detail-actions {
